@@ -48,10 +48,31 @@ def load_run(run_dir: Path) -> dict | None:
     metrics = json.loads(mj.read_text())
     cfg = yaml.safe_load(cs.read_text()) if cs.exists() else {}
     fm = metrics.get("final_metrics", {})
+    parsed = parse_run_id(metrics["run_id"])
+    # Newer runs carry these fields directly; fall back to config snapshot for
+    # older runs that pre-date the metrics.json schema extension.
+    model = metrics.get("model_name") or cfg.get("model", {}).get("name", "?")
+    hidden = metrics.get("model_hidden") or cfg.get("model", {}).get("hidden")
+    mode = metrics.get("data_mode") or cfg.get("data", {}).get("mode", "binary")
+    if metrics.get("data_partition"):
+        partition = metrics["data_partition"]
+        alpha = metrics.get("data_alpha")
+    else:
+        partition = parsed["partition"]
+        alpha = parsed["alpha"]
+    if partition == "iid":
+        alpha = None
+    hidden_str = "x".join(str(h) for h in hidden) if hidden else "?"
+    variant = f"{model}_h{hidden_str}"
     return {
         "run_id": metrics["run_id"],
-        **parse_run_id(metrics["run_id"]),
-        "model": cfg.get("model", {}).get("name", "?"),
+        "exp": parsed["exp"],
+        "model": model,
+        "variant": variant,
+        "mode": mode,
+        "partition": partition,
+        "alpha": alpha,
+        "seed": parsed["seed"],
         "n_params": metrics.get("n_params"),
         "rounds": metrics.get("rounds"),
         "final_accuracy": fm.get("accuracy"),
@@ -78,23 +99,23 @@ def main():
         for r in runs:
             f.write(",".join("" if r[c] is None else str(r[c]) for c in cols) + "\n")
 
-    # 2. Aggregate by (exp, partition, alpha, model) — mean/std over seeds.
+    # 2. Aggregate by (variant, mode, partition, alpha) — mean/std over seeds.
     cells: dict[tuple, list[dict]] = {}
     for r in runs:
-        key = (r["model"], r["partition"], r["alpha"])
+        key = (r["variant"], r["mode"], r["partition"], r["alpha"])
         cells.setdefault(key, []).append(r)
 
     with open(OUT / "summary_by_cell.csv", "w", encoding="utf-8") as f:
-        f.write("model,partition,alpha,n_seeds,n_params,acc_mean,acc_std,"
-                "f1m_mean,f1m_std,total_mb_mean\n")
+        f.write("variant,mode,partition,alpha,n_seeds,n_params,"
+                "acc_mean,acc_std,f1m_mean,f1m_std,total_mb_mean\n")
         for key, rs in sorted(cells.items()):
             accs = [r["final_accuracy"] for r in rs if r["final_accuracy"] is not None]
             f1ms = [r["final_f1_macro"] for r in rs if r["final_f1_macro"] is not None]
             mbs = [(r["total_uplink_bytes"] or 0) / 1024 / 1024 for r in rs]
             n = len(rs)
             f.write(",".join([
-                key[0], key[1],
-                "" if key[2] is None else f"{key[2]}",
+                key[0], key[1], key[2],
+                "" if key[3] is None else f"{key[3]}",
                 str(n),
                 str(rs[0]["n_params"] or ""),
                 f"{stats.mean(accs):.4f}" if accs else "",
@@ -106,10 +127,11 @@ def main():
 
     # 3. Console pretty-print (ASCII-only for Windows cp1252 consoles).
     print(f"\nResults aggregated from {len(runs)} runs.\n")
-    print(f"{'Model':6s} {'Partition':12s} {'alpha':>6s} {'Seeds':>5s} "
-          f"{'Params':>8s} {'Acc (mean+/-std) %':>22s} {'F1m (mean+/-std) %':>22s} "
-          f"{'Uplink (MB)':>14s}")
-    print("-" * 110)
+    print(f"{'Variant':14s} {'Mode':10s} {'Partition':12s} {'alpha':>6s} "
+          f"{'Seeds':>5s} {'Params':>7s} "
+          f"{'Acc (mean+/-std) %':>22s} {'F1m (mean+/-std) %':>22s} "
+          f"{'MB':>8s}")
+    print("-" * 130)
     for key, rs in sorted(cells.items()):
         accs = [r["final_accuracy"] for r in rs if r["final_accuracy"] is not None]
         f1ms = [r["final_f1_macro"] for r in rs if r["final_f1_macro"] is not None]
@@ -119,12 +141,12 @@ def main():
         f_mean = stats.mean(f1ms) if f1ms else 0
         f_std = stats.stdev(f1ms) if len(f1ms) > 1 else 0
         m_mean = stats.mean(mbs) if mbs else 0
-        alpha_str = "-" if key[2] is None else f"{key[2]}"
-        print(f"{key[0]:6s} {key[1]:12s} {alpha_str:>6s} {len(rs):>5d} "
-              f"{rs[0]['n_params'] or 0:>8d} "
+        alpha_str = "-" if key[3] is None else f"{key[3]}"
+        print(f"{key[0]:14s} {key[1]:10s} {key[2]:12s} {alpha_str:>6s} "
+              f"{len(rs):>5d} {rs[0]['n_params'] or 0:>7d} "
               f"{a_mean*100:>10.4f} +/- {a_std*100:>6.4f}  "
               f"{f_mean*100:>10.4f} +/- {f_std*100:>6.4f}  "
-              f"{m_mean:>12.2f}")
+              f"{m_mean:>6.2f}")
     print()
     print(f"Wrote {OUT/'summary.csv'} and {OUT/'summary_by_cell.csv'}")
 

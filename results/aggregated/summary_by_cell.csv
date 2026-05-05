@@ -1,7 +1,7 @@
-model,partition,alpha,n_seeds,n_params,acc_mean,acc_std,f1m_mean,f1m_std,total_mb_mean
-kan,dirichlet,0.1,3,3280,0.9581,0.0425,0.9580,0.0426,7.33
-kan,dirichlet,1.0,3,3280,0.9969,0.0005,0.9969,0.0005,7.33
-kan,iid,,3,3280,0.9753,0.0005,0.9753,0.0005,7.33
-mlp,dirichlet,0.1,3,1346,0.8039,0.1967,0.7785,0.2322,2.57
-mlp,dirichlet,1.0,3,1346,0.9973,0.0002,0.9973,0.0002,2.57
-mlp,iid,,3,1346,0.9900,0.0120,0.9900,0.0120,2.57
+variant,mode,partition,alpha,n_seeds,n_params,acc_mean,acc_std,f1m_mean,f1m_std,total_mb_mean
+kan_h8,binary,dirichlet,0.1,3,3280,0.9581,0.0425,0.9580,0.0426,7.33
+kan_h8,binary,dirichlet,1.0,3,3280,0.9969,0.0005,0.9969,0.0005,7.33
+kan_h8,binary,iid,,3,3280,0.9753,0.0005,0.9753,0.0005,7.33
+mlp_h32,binary,dirichlet,0.1,3,1346,0.8039,0.1967,0.7785,0.2322,2.57
+mlp_h32,binary,dirichlet,1.0,3,1346,0.9973,0.0002,0.9973,0.0002,2.57
+mlp_h32,binary,iid,,3,1346,0.9900,0.0120,0.9900,0.0120,2.57

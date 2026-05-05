@@ -26,27 +26,58 @@ from src.models import build_model, count_params  # noqa: E402
 from src.fl import federated_train  # noqa: E402
 
 
+def _parse_hidden(s: str) -> list[int]:
+    return [int(x) for x in s.split(",") if x.strip()]
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--config", required=True)
     p.add_argument("--seed", type=int, default=None)
     p.add_argument("--output-root", default=None,
                    help="Override the per-run output directory root.")
-    p.add_argument("--partition", choices=["iid", "dirichlet"], default=None,
-                   help="Override data.partition in config.")
-    p.add_argument("--alpha", type=float, default=None,
-                   help="Override data.alpha (Dirichlet concentration).")
-    p.add_argument("--rounds", type=int, default=None,
-                   help="Override fl.rounds for short runs.")
+    p.add_argument("--exp-id", default=None,
+                   help="Override experiment.id (used in the run_id).")
+    p.add_argument("--partition", choices=["iid", "dirichlet"], default=None)
+    p.add_argument("--alpha", type=float, default=None)
+    p.add_argument("--rounds", type=int, default=None)
+    p.add_argument("--mode", choices=["binary", "multiclass"], default=None,
+                   help="Override data.mode for NetFlow datasets.")
+    p.add_argument("--downsample", type=int, default=None,
+                   help="Override data.downsample_per_class.")
+    p.add_argument("--model-name", choices=["kan", "mlp"], default=None,
+                   help="Override model.name.")
+    p.add_argument("--hidden", default=None,
+                   help="Override model.hidden, e.g. '8' or '16,16'.")
+    p.add_argument("--grid-size", type=int, default=None,
+                   help="KAN grid size.")
+    p.add_argument("--spline-order", type=int, default=None,
+                   help="KAN B-spline order.")
+    p.add_argument("--skip-existing", action="store_true",
+                   help="Do not re-run if metrics.json already exists.")
     args = p.parse_args()
 
     cfg = load_config(args.config)
+    if args.exp_id is not None:
+        cfg.setdefault("experiment", {})["id"] = args.exp_id
     if args.partition is not None:
         cfg["data"]["partition"] = args.partition
     if args.alpha is not None:
         cfg["data"]["alpha"] = args.alpha
     if args.rounds is not None:
         cfg["fl"]["rounds"] = args.rounds
+    if args.mode is not None:
+        cfg["data"]["mode"] = args.mode
+    if args.downsample is not None:
+        cfg["data"]["downsample_per_class"] = args.downsample
+    if args.model_name is not None:
+        cfg["model"]["name"] = args.model_name
+    if args.hidden is not None:
+        cfg["model"]["hidden"] = _parse_hidden(args.hidden)
+    if args.grid_size is not None:
+        cfg["model"]["grid_size"] = args.grid_size
+    if args.spline_order is not None:
+        cfg["model"]["spline_order"] = args.spline_order
 
     seed = args.seed if args.seed is not None else cfg.get("seed", 42)
     set_seed(seed)
@@ -54,6 +85,9 @@ def main():
 
     out_root = Path(args.output_root or cfg["output"]["dir"])
     run_dir = out_root / run_id_for(cfg, seed)
+    if args.skip_existing and (run_dir / "metrics.json").exists():
+        print(f"[run] SKIP (already done): {run_dir}/metrics.json")
+        return
     run_dir.mkdir(parents=True, exist_ok=True)
 
     # Snapshot the resolved config for reproducibility.
@@ -98,6 +132,13 @@ def main():
         "run_id": run_id_for(cfg, seed),
         "seed": seed,
         "device": str(device),
+        "model_name": cfg["model"]["name"],
+        "model_hidden": cfg["model"].get("hidden"),
+        "model_grid_size": cfg["model"].get("grid_size"),
+        "model_spline_order": cfg["model"].get("spline_order"),
+        "data_mode": cfg["data"].get("mode", "binary"),
+        "data_partition": cfg["data"].get("partition", "dirichlet"),
+        "data_alpha": cfg["data"].get("alpha"),
         "n_params": n_params,
         "bytes_per_round_uplink": result["bytes_per_round_uplink"],
         "total_uplink_bytes": int(sum(result["history"]["comm_uplink_bytes"])),
