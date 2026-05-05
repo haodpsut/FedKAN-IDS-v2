@@ -1,0 +1,36 @@
+# First real-data experiment: FedKAN on NF-BoT-IoT-v2, binary, 50 rounds, 10 clients.
+# Mirrors the original CITA setup so we can sanity-check parity before adding baselines.
+seed: 42
+device: auto
+
+experiment:
+  id: e1_mini_botiot_kan_binary
+  description: FedKAN sanity run on NF-BoT-IoT-v2 binary, 10 clients, alpha=0.1, 50 rounds
+
+data:
+  name: nf_botiot_v2
+  mode: binary                       # 'binary' or 'multiclass'
+  test_ratio: 0.2
+  alpha: 0.1
+  n_clients: 10
+  downsample_per_class: 130000       # balance pre-split: ~260k samples (~CITA setup)
+
+fl:
+  rounds: 50
+  fraction: 1.0
+  local_epochs: 1
+  batch_size: 1024
+  lr: 0.01
+  optimizer: adam
+  weight_decay: 0.0
+
+model:
+  name: kan
+  hidden: [8]
+  grid_size: 5
+  spline_order: 3
+
+output:
+  dir: results/runs
+  save_per_round: true
+  save_state_dict: false

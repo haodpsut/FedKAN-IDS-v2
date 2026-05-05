@@ -1,0 +1,12 @@
+name: nf_toniot_v2
+display_name: NF-ToN-IoT-v2
+source:
+  primary: kaggle
+  kaggle_slug: dhoogla/nftoniotv2
+  expected_csv: NF-ToN-IoT-v2.csv
+preprocess:
+  drop_columns: [IPV4_SRC_ADDR, IPV4_DST_ADDR, L4_SRC_PORT, L4_DST_PORT]
+  binary_label_column: Label
+  multiclass_label_column: Attack
+  scaler: minmax
+  downsample_majority_to: null

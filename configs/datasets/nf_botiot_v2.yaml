@@ -1,0 +1,13 @@
+# NF-BoT-IoT-v2 (Sarhan et al. 2022 standardised NetFlow)
+name: nf_botiot_v2
+display_name: NF-BoT-IoT-v2
+source:
+  primary: kaggle
+  kaggle_slug: dhoogla/nfbotiotv2
+  expected_csv: NF-BoT-IoT-v2.csv
+preprocess:
+  drop_columns: [IPV4_SRC_ADDR, IPV4_DST_ADDR, L4_SRC_PORT, L4_DST_PORT]
+  binary_label_column: Label
+  multiclass_label_column: Attack
+  scaler: minmax
+  downsample_majority_to: null   # set integer to balance training set
