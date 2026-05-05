@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Data (not committed; lives on Drive)
+data/
+*.parquet
+*.csv.gz
+*.pkl
+*.pt
+*.pth
+
+# Colab/Jupyter
+.colab/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# LaTeX intermediate
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.synctex.gz
+
+# Results: keep aggregated + figures, ignore raw model checkpoints
+results/checkpoints/
+*.tar
+*.zip
