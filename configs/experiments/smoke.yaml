@@ -1,0 +1,35 @@
+seed: 42
+device: auto
+
+experiment:
+  id: smoke
+  description: Pipeline sanity check on synthetic data, 5 rounds, 2 clients
+
+data:
+  name: synthetic
+  n_samples: 2000
+  n_features: 16
+  n_classes: 2
+  test_ratio: 0.2
+  alpha: 0.5
+  n_clients: 2
+
+fl:
+  rounds: 5
+  fraction: 1.0
+  local_epochs: 1
+  batch_size: 256
+  lr: 0.01
+  optimizer: adam
+  weight_decay: 0.0
+
+model:
+  name: kan
+  hidden: [8]
+  grid_size: 5
+  spline_order: 3
+
+output:
+  dir: results/runs
+  save_per_round: true
+  save_state_dict: false
