@@ -1,0 +1,27 @@
+{
+  "run_id": "smoke__seed2026",
+  "seed": 2026,
+  "device": "cuda",
+  "n_params": 1440,
+  "bytes_per_round_uplink": 6912,
+  "total_uplink_bytes": 69120,
+  "final_metrics": {
+    "accuracy": 1.0,
+    "f1_macro": 1.0,
+    "f1_weighted": 1.0,
+    "per_class_precision": [
+      1.0,
+      1.0
+    ],
+    "per_class_recall": [
+      1.0,
+      1.0
+    ],
+    "per_class_f1": [
+      1.0,
+      1.0
+    ]
+  },
+  "best_accuracy": 1.0,
+  "rounds": 5
+}
