@@ -51,9 +51,21 @@ def cache_paths(name: str) -> tuple[Path, Path]:
     return CACHE_DIR / f"{name}.parquet", CACHE_DIR / f"{name}{META_SUFFIX}"
 
 
+def _read_table(path: Path) -> pd.DataFrame:
+    suf = path.suffix.lower()
+    if suf == ".parquet":
+        return pd.read_parquet(path)
+    if suf in (".csv", ".tsv"):
+        sep = "\t" if suf == ".tsv" else ","
+        return pd.read_csv(path, sep=sep, low_memory=False)
+    raise ValueError(f"Unsupported extension {suf} for {path}")
+
+
 def preprocess_raw_csv(csv_path: Path, ds_cfg: dict) -> tuple[pd.DataFrame, dict]:
     """Apply Sarhan-style cleanup; returns (parquet-ready df, meta dict)."""
-    df = pd.read_csv(csv_path, low_memory=False)
+    df = _read_table(csv_path)
+    print(f"[netflow_v2] loaded {csv_path.name}: shape={df.shape}, "
+          f"first cols={list(df.columns)[:8]}")
     pp = ds_cfg["preprocess"]
 
     drop = [c for c in pp.get("drop_columns", []) if c in df.columns]
@@ -64,7 +76,7 @@ def preprocess_raw_csv(csv_path: Path, ds_cfg: dict) -> tuple[pd.DataFrame, dict
     if bin_col not in df.columns or mc_col not in df.columns:
         raise ValueError(
             f"Expected label columns {bin_col!r} and {mc_col!r} in {csv_path}; "
-            f"found columns: {list(df.columns)[:10]}…"
+            f"all columns: {list(df.columns)}"
         )
 
     # Numeric features (drop labels).

@@ -52,21 +52,59 @@ def kaggle_download(slug: str, dest: Path) -> None:
     subprocess.run(cmd, check=True)
 
 
-def find_csv(dest: Path, expected: str) -> Path:
-    cand = dest / expected
-    if cand.exists():
-        return cand
-    matches = list(dest.rglob(expected))
-    if matches:
-        return matches[0]
-    csvs = list(dest.rglob("*.csv"))
-    if not csvs:
-        raise FileNotFoundError(
-            f"No CSV under {dest} after Kaggle unzip; got: {list(dest.iterdir())}"
+_METADATA_KEYWORDS = ("feature", "readme", "metadata", "description",
+                      "license", "schema", "columns", "_info")
+_MIN_DATA_BYTES = 1_000_000  # files smaller than 1 MB are almost certainly metadata
+
+
+def find_data_file(dest: Path, expected: str | None = None) -> Path:
+    """Locate the actual dataset file in `dest`.
+
+    Strategy:
+      1. If `expected` filename is provided and exists → use it.
+      2. Otherwise scan for parquet (preferred) then csv, skipping files
+         whose name suggests documentation/metadata or whose size is below
+         _MIN_DATA_BYTES.
+      3. Pick the largest survivor.
+      4. On failure, raise listing every file under `dest` for debugging.
+    """
+    if expected:
+        cand = dest / expected
+        if cand.exists():
+            return cand
+        for m in dest.rglob(expected):
+            return m
+
+    candidates: list[Path] = []
+    for pattern in ("*.parquet", "*.csv"):
+        for f in dest.rglob(pattern):
+            name_lower = f.name.lower()
+            if any(kw in name_lower for kw in _METADATA_KEYWORDS):
+                continue
+            try:
+                if f.stat().st_size < _MIN_DATA_BYTES:
+                    continue
+            except OSError:
+                continue
+            candidates.append(f)
+        if candidates:
+            break  # parquet wins; only fall back to csv if no parquet
+
+    if not candidates:
+        listing = "\n".join(
+            f"  {p.relative_to(dest)}  ({p.stat().st_size:,} B)"
+            for p in sorted(dest.rglob("*")) if p.is_file()
         )
-    print(f"[prepare_data] expected '{expected}' missing, "
-          f"using first CSV found: {csvs[0].name}")
-    return csvs[0]
+        raise FileNotFoundError(
+            f"No data file found under {dest} (after skipping metadata < {_MIN_DATA_BYTES:,} B). "
+            f"Files present:\n{listing}"
+        )
+
+    candidates.sort(key=lambda p: p.stat().st_size, reverse=True)
+    chosen = candidates[0]
+    print(f"[prepare_data] picked data file: {chosen.relative_to(dest)} "
+          f"({chosen.stat().st_size:,} B)")
+    return chosen
 
 
 def prepare(name: str, force: bool) -> None:
@@ -77,20 +115,23 @@ def prepare(name: str, force: bool) -> None:
         return
 
     raw_dir = RAW_DIR / name
-    csv_name = cfg["source"].get("expected_csv")
-    csv_in_raw = list(raw_dir.rglob(csv_name)) if csv_name else []
+    expected = cfg["source"].get("expected_csv")
+    pre_existing = list(raw_dir.rglob(expected)) if expected else []
 
-    if not csv_in_raw:
+    if not pre_existing:
         if cfg["source"]["primary"] != "kaggle":
             sys.exit(f"Only kaggle source is wired up; got {cfg['source']}")
-        kaggle_download(cfg["source"]["kaggle_slug"], raw_dir)
-        csv_path = find_csv(raw_dir, csv_name)
+        if not raw_dir.exists() or not any(raw_dir.iterdir()):
+            kaggle_download(cfg["source"]["kaggle_slug"], raw_dir)
+        else:
+            print(f"[prepare_data] {raw_dir} already populated, skipping download")
+        data_path = find_data_file(raw_dir, expected)
     else:
-        csv_path = csv_in_raw[0]
-        print(f"[prepare_data] reuse existing raw CSV: {csv_path}")
+        data_path = pre_existing[0]
+        print(f"[prepare_data] reuse existing raw file: {data_path}")
 
-    print(f"[prepare_data] preprocess {csv_path} ...")
-    df, meta = preprocess_raw_csv(csv_path, cfg)
+    print(f"[prepare_data] preprocess {data_path} ...")
+    df, meta = preprocess_raw_csv(data_path, cfg)
     out = write_cache(name, df, meta)
     print(f"[prepare_data] wrote {out}  ({meta['n_samples']:,} rows, "
           f"{len(meta['feature_names'])} features, "
