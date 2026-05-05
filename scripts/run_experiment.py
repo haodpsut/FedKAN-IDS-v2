@@ -32,9 +32,22 @@ def main():
     p.add_argument("--seed", type=int, default=None)
     p.add_argument("--output-root", default=None,
                    help="Override the per-run output directory root.")
+    p.add_argument("--partition", choices=["iid", "dirichlet"], default=None,
+                   help="Override data.partition in config.")
+    p.add_argument("--alpha", type=float, default=None,
+                   help="Override data.alpha (Dirichlet concentration).")
+    p.add_argument("--rounds", type=int, default=None,
+                   help="Override fl.rounds for short runs.")
     args = p.parse_args()
 
     cfg = load_config(args.config)
+    if args.partition is not None:
+        cfg["data"]["partition"] = args.partition
+    if args.alpha is not None:
+        cfg["data"]["alpha"] = args.alpha
+    if args.rounds is not None:
+        cfg["fl"]["rounds"] = args.rounds
+
     seed = args.seed if args.seed is not None else cfg.get("seed", 42)
     set_seed(seed)
     device = get_device(cfg.get("device", "auto"))

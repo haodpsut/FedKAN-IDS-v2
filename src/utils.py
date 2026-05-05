@@ -58,4 +58,13 @@ def append_csv_row(row: dict, path: str | Path) -> None:
 
 def run_id_for(config: dict, seed: int) -> str:
     exp_id = config.get("experiment", {}).get("id", "exp")
-    return f"{exp_id}__seed{seed}"
+    data = config.get("data", {})
+    mode = data.get("partition", "dirichlet")
+    if mode == "iid":
+        ptag = "iid"
+    elif mode == "dirichlet":
+        alpha = data.get("alpha", "?")
+        ptag = f"dir{alpha}"
+    else:
+        ptag = mode
+    return f"{exp_id}__{ptag}__seed{seed}"

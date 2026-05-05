@@ -34,13 +34,18 @@ from src.datasets.netflow_v2 import (  # noqa: E402
 
 def kaggle_download(slug: str, dest: Path) -> None:
     dest.mkdir(parents=True, exist_ok=True)
-    home = Path.home() / ".kaggle" / "kaggle.json"
-    if not home.exists():
+    kdir = Path.home() / ".kaggle"
+    legacy = kdir / "kaggle.json"
+    new_tok = kdir / "access_token"
+    has_env_tok = bool(os.environ.get("KAGGLE_API_TOKEN"))
+    if not (legacy.exists() or new_tok.exists() or has_env_tok):
         sys.exit(
-            f"\n[prepare_data] kaggle.json missing at {home}.\n"
-            "On Colab, run cell 'A1' in notebooks/10_run_batch.ipynb to copy "
-            "it from your Drive, or upload it manually:\n"
-            "    !mkdir -p ~/.kaggle && cp <path>/kaggle.json ~/.kaggle/ && chmod 600 ~/.kaggle/kaggle.json\n"
+            f"\n[prepare_data] No Kaggle credentials found.\n"
+            "Provide ONE of:\n"
+            f"  - {legacy}  (legacy format with username + key)\n"
+            f"  - {new_tok}  (new format: KGAT_... single-line token)\n"
+            "  - environment variable KAGGLE_API_TOKEN=KGAT_...\n"
+            "On Colab use cell A1 in notebooks/10_run_batch.ipynb."
         )
     print(f"[prepare_data] kaggle datasets download -d {slug} -p {dest} --unzip")
     cmd = ["kaggle", "datasets", "download", "-d", slug, "-p", str(dest), "--unzip"]

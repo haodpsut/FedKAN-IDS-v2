@@ -78,7 +78,17 @@ def stratified_split(
     return X[tr], y[tr], X[te], y[te]
 
 
-# -- Dirichlet partition ------------------------------------------------------
+# -- Partitions ---------------------------------------------------------------
+
+def iid_partition(
+    y: np.ndarray, n_clients: int, seed: int = 42,
+) -> list[np.ndarray]:
+    """Uniform random split — every client sees the global class distribution."""
+    rng = np.random.RandomState(seed)
+    idx = np.arange(len(y))
+    rng.shuffle(idx)
+    return [np.sort(part) for part in np.array_split(idx, n_clients)]
+
 
 def dirichlet_partition(
     y: np.ndarray, n_clients: int, alpha: float, seed: int = 42,
@@ -98,8 +108,21 @@ def dirichlet_partition(
                 client_idx[k].extend(chunks[k].tolist())
         sizes = [len(idx) for idx in client_idx]
         if min(sizes) >= min_per_client:
-            break  # otherwise resample partition
+            break
     return [np.array(sorted(idx)) for idx in client_idx]
+
+
+def partition(
+    y: np.ndarray, *, mode: str, n_clients: int,
+    alpha: float | None = None, seed: int = 42,
+) -> list[np.ndarray]:
+    if mode == "iid":
+        return iid_partition(y, n_clients, seed=seed)
+    if mode == "dirichlet":
+        if alpha is None:
+            raise ValueError("dirichlet partition requires `alpha`")
+        return dirichlet_partition(y, n_clients, alpha=alpha, seed=seed)
+    raise ValueError(f"Unknown partition mode: {mode}")
 
 
 # -- Driver -------------------------------------------------------------------
@@ -145,10 +168,11 @@ def build_federated_split(cfg_data: dict, seed: int) -> FederatedSplit:
         X, y, test_ratio=cfg_data.get("test_ratio", 0.2), seed=seed
     )
 
-    parts = dirichlet_partition(
+    parts = partition(
         y_tr,
+        mode=cfg_data.get("partition", "dirichlet"),
         n_clients=cfg_data["n_clients"],
-        alpha=cfg_data["alpha"],
+        alpha=cfg_data.get("alpha"),
         seed=seed,
     )
     client_train = [
