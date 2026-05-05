@@ -1,0 +1,27 @@
+{
+  "run_id": "e1_mini_botiot_mlp_binary__dir0.1__seed2026",
+  "seed": 2026,
+  "device": "cuda",
+  "n_params": 1346,
+  "bytes_per_round_uplink": 5384,
+  "total_uplink_bytes": 2692000,
+  "final_metrics": {
+    "accuracy": 0.6044095823616705,
+    "f1_macro": 0.5351923108547162,
+    "f1_weighted": 0.5348016824933175,
+    "per_class_precision": [
+      0.5582426178215241,
+      0.9667462482946794
+    ],
+    "per_class_recall": [
+      0.9924672615598563,
+      0.21803846153846154
+    ],
+    "per_class_f1": [
+      0.7145598664997914,
+      0.35582475520964096
+    ]
+  },
+  "best_accuracy": 0.66585079114229,
+  "rounds": 50
+}

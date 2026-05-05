@@ -1,0 +1,32 @@
+seed: 42
+device: auto
+experiment:
+  id: e1_mini_botiot_mlp_binary
+  description: FedAvg-MLP baseline on NF-BoT-IoT-v2 binary (CITA reference config)
+data:
+  name: nf_botiot_v2
+  mode: binary
+  test_ratio: 0.2
+  alpha: 0.1
+  n_clients: 10
+  downsample_per_class: 130000
+  partition: dirichlet
+fl:
+  rounds: 50
+  fraction: 1.0
+  local_epochs: 1
+  batch_size: 1024
+  lr: 0.01
+  optimizer: adam
+  weight_decay: 0.0
+model:
+  name: mlp
+  hidden:
+  - 32
+output:
+  dir: results/runs
+  save_per_round: true
+  save_state_dict: false
+_resolved:
+  seed: 2026
+  device: cuda

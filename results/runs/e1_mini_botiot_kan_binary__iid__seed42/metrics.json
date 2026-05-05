@@ -1,0 +1,27 @@
+{
+  "run_id": "e1_mini_botiot_kan_binary__iid__seed42",
+  "seed": 42,
+  "device": "cuda",
+  "n_params": 3280,
+  "bytes_per_round_uplink": 15376,
+  "total_uplink_bytes": 7688000,
+  "final_metrics": {
+    "accuracy": 0.9746757376606857,
+    "f1_macro": 0.9746645365463202,
+    "f1_weighted": 0.9746633763942366,
+    "per_class_precision": [
+      0.953527001587243,
+      0.997781900306501
+    ],
+    "per_class_recall": [
+      0.9978753814656005,
+      0.9515769230769231
+    ],
+    "per_class_f1": [
+      0.9751972516893805,
+      0.97413182140326
+    ]
+  },
+  "best_accuracy": 0.9746757376606857,
+  "rounds": 50
+}
