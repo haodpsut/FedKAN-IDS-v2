@@ -28,10 +28,15 @@ PARTITION_HEAD = {
 }
 
 
+DATASET_PREFIX = "e1_botiot"   # BoT-IoT only for the headline tables
+
+
 def load_runs() -> list[dict]:
     out = []
     for d in sorted(RUNS.iterdir()):
         if not d.is_dir() or d.name.startswith("smoke"):
+            continue
+        if not d.name.startswith(DATASET_PREFIX):
             continue
         mj = d / "metrics.json"
         if not mj.exists():
@@ -165,7 +170,8 @@ def worst_seed_table() -> str:
     lines.append(r"\caption{Worst-seed accuracy (\%) — the weakest of $n$ seeds per cell. Reveals catastrophic collapse hidden by averages. NF-BoT-IoT-v2 binary, 50 rounds.}")
     lines.append(r"\label{tab:worst_seed_botiot}")
     lines.append(r"\renewcommand{\arraystretch}{1.15}")
-    lines.append(r"\begin{tabular}{l c " + " ".join(["c"] * len(PARTITION_ORDER)) + "}")
+    lines.append(r"\setlength{\tabcolsep}{4pt}")
+    lines.append(r"\begin{tabular}{@{}l c " + " ".join(["c"] * len(PARTITION_ORDER)) + r"@{}}")
     lines.append(r"\toprule")
     head = ["Method", "Params"] + [PARTITION_HEAD[p] for p in PARTITION_ORDER]
     lines.append(" & ".join(head) + r" \\")

@@ -1,0 +1,19 @@
+% PLACEHOLDER table — TBD entries to be filled in once M3c/M3.5 results land.
+% Replace --- with the worst-seed accuracy from results/aggregated/summary_by_cell.csv.
+\begin{table}[t]
+\centering
+\caption{Cross-dataset replication: worst-seed accuracy (\%) on the heterogeneity-robustness cell (binary, Dirichlet $\alpha = 0.1$). The BoT-IoT-v2 column reports actual results from $n = 10$ seeds; the other two columns will be populated from M3c (ToN-IoT-v2) and M3.5 (CSE-CIC-IDS2018-v2). Dashes indicate runs pending.}
+\label{tab:cross_dataset}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}l c c c c@{}}
+\toprule
+Method & Params & BoT-IoT-v2 & ToN-IoT-v2 & CSE-CIC \\
+\midrule
+FedAvg-MLP (32h)         & 1{,}346 & 60.44 & --- & --- \\
+FedAvg-MLP-PM (80h)      & 3{,}362 & 56.45 & --- & --- \\
+\textbf{FedKAN (Ours, 8h)} & 3{,}280 & \textbf{80.69} & --- & --- \\
+F-KAN (16h)              & 6{,}560 & 80.72 & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}

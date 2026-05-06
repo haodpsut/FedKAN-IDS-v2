@@ -54,11 +54,16 @@ def variant_of(metrics: dict) -> str | None:
     return f"{m}_h{'x'.join(str(x) for x in h)}"
 
 
+DATASET_PREFIX = "e1_botiot"
+
+
 def gather_perclass(mode: str, ptag: str) -> dict:
     """{variant: {class_idx: [f1 across seeds]}}"""
     bucket: dict = {}
     for d in sorted(RUNS.iterdir()):
         if not d.is_dir() or d.name.startswith("smoke"):
+            continue
+        if not d.name.startswith(DATASET_PREFIX):
             continue
         parts = d.name.split("__")
         if len(parts) < 3 or parts[1] != ptag:

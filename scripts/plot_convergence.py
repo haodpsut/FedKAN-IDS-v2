@@ -71,11 +71,16 @@ def variant_of(run_dir: Path) -> str | None:
     return None
 
 
+DATASET_PREFIX = "e1_botiot"   # BoT-IoT only for the BoT-IoT figures
+
+
 def gather() -> dict:
     """{(mode, partition_tag, variant): [DataFrame seed1, DataFrame seed2, ...]}"""
     bucket: dict = {}
     for d in sorted(RUNS.iterdir()):
         if not d.is_dir() or d.name.startswith("smoke"):
+            continue
+        if not d.name.startswith(DATASET_PREFIX):
             continue
         meta = parse(d.name)
         if meta is None:
