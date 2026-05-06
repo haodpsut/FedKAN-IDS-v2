@@ -1,0 +1,45 @@
+{
+  "run_id": "e1_botiot_multiclass_mlp_h32__dir0.1__seed17",
+  "seed": 17,
+  "device": "cuda",
+  "model_name": "mlp",
+  "model_hidden": [
+    32
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "multiclass",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "n_params": 1445,
+  "bytes_per_round_uplink": 5780,
+  "total_uplink_bytes": 2890000,
+  "final_metrics": {
+    "accuracy": 0.9596668561401774,
+    "f1_macro": 0.7720976443407098,
+    "f1_weighted": 0.954078595680881,
+    "per_class_precision": [
+      0.9745148010194079,
+      0.9919072834448996,
+      0.9383489066563915,
+      0.9340492351332185,
+      0.0
+    ],
+    "per_class_recall": [
+      0.9942,
+      0.9928,
+      0.9741,
+      0.922,
+      0.0
+    ],
+    "per_class_f1": [
+      0.9842589842589843,
+      0.9923534409515717,
+      0.955890289975958,
+      0.9279855065170349,
+      0.0
+    ]
+  },
+  "best_accuracy": 0.9596668561401774,
+  "rounds": 50
+}
