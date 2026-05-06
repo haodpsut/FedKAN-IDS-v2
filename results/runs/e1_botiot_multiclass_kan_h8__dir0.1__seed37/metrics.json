@@ -1,0 +1,45 @@
+{
+  "run_id": "e1_botiot_multiclass_kan_h8__dir0.1__seed37",
+  "seed": 37,
+  "device": "cuda",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "multiclass",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "n_params": 3520,
+  "bytes_per_round_uplink": 16336,
+  "total_uplink_bytes": 8168000,
+  "final_metrics": {
+    "accuracy": 0.7981365692113783,
+    "f1_macro": 0.6194408995500645,
+    "f1_weighted": 0.765441143204983,
+    "per_class_precision": [
+      0.6064237484031876,
+      0.9233410672853828,
+      0.9370726389852344,
+      0.9249525015832806,
+      0.0
+    ],
+    "per_class_recall": [
+      0.9969,
+      0.9949,
+      0.9456,
+      0.2921,
+      0.0
+    ],
+    "per_class_f1": [
+      0.7541132418018835,
+      0.9577858002406738,
+      0.9413170076153502,
+      0.4439884480924153,
+      0.0
+    ]
+  },
+  "best_accuracy": 0.9192101425994118,
+  "rounds": 50
+}
