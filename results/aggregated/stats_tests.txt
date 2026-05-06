@@ -1,0 +1,44 @@
+Pairwise stats: kan_h8 (Ours) vs mlp_h80 (toughest baseline)
+  MIN_SEEDS=3, N_BOOT=5000
+
+=== binary/dir0.1  (n_A=3, n_B=3)  paired=True
+  KAN-8 (Ours): mean=95.82%  std=4.26  worst=91.26%
+  MLP-PM (B):  mean=80.33%  std=22.01  worst=56.45%
+  Welch t = +1.197, p = 0.347, Cohen d = +0.977
+  Paired t = +1.246, p = 0.339 (n_paired=3)
+  Mean diff (A-B) = +15.49pp, 95% CI = [-0.12, +40.05]
+
+=== binary/dir1.0  (n_A=3, n_B=3)  paired=True
+  KAN-8 (Ours): mean=99.66%  std=0.06  worst=99.61%
+  MLP-PM (B):  mean=99.76%  std=0.01  worst=99.74%
+  Welch t = -2.679, p = 0.104, Cohen d = -2.187
+  Paired t = -2.232, p = 0.155 (n_paired=3)
+  Mean diff (A-B) = -0.10pp, 95% CI = [-0.16, -0.01]
+
+=== binary/iid  (n_A=3, n_B=3)  paired=True
+  KAN-8 (Ours): mean=97.52%  std=0.06  worst=97.45%
+  MLP-PM (B):  mean=99.74%  std=0.00  worst=99.73%
+  Welch t = -62.655, p = <10^{-3}, Cohen d = -51.157
+  Paired t = -65.705, p = <10^{-3} (n_paired=3)
+  Mean diff (A-B) = -2.22pp, 95% CI = [-2.28, -2.18]
+
+=== multiclass/dir0.1  (n_A=3, n_B=3)  paired=True
+  KAN-8 (Ours): mean=86.27%  std=5.23  worst=80.82%
+  MLP-PM (B):  mean=84.46%  std=11.27  worst=71.47%
+  Welch t = +0.252, p = 0.818, Cohen d = +0.206
+  Paired t = +0.251, p = 0.825 (n_paired=3)
+  Mean diff (A-B) = +1.81pp, 95% CI = [-9.42, +15.27]
+
+=== multiclass/dir1.0  (n_A=3, n_B=3)  paired=True
+  KAN-8 (Ours): mean=93.33%  std=0.16  worst=93.17%
+  MLP-PM (B):  mean=93.19%  std=0.21  worst=93.06%
+  Welch t = +0.915, p = 0.415, Cohen d = +0.747
+  Paired t = +2.485, p = 0.131 (n_paired=3)
+  Mean diff (A-B) = +0.14pp, 95% CI = [+0.06, +0.25]
+
+=== multiclass/iid  (n_A=3, n_B=3)  paired=True
+  KAN-8 (Ours): mean=93.25%  std=0.08  worst=93.16%
+  MLP-PM (B):  mean=93.63%  std=0.49  worst=93.07%
+  Welch t = -1.311, p = 0.314, Cohen d = -1.070
+  Paired t = -1.549, p = 0.262 (n_paired=3)
+  Mean diff (A-B) = -0.38pp, 95% CI = [-0.74, +0.09]
