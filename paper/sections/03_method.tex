@@ -4,74 +4,142 @@ This section describes how Definitions~\ref{def:kan} and~\ref{def:fl-ids} are in
 
 \subsection{System Architecture}\label{subsec:arch}
 
+The FedKAN-IDS pipeline alternates between four stages per communication round, depicted in Fig.~\ref{fig:flow}: (1) the server initialises the global KAN with hyperparameters $(n_h, G, k)$; (2) broadcasts the current parameter triple $\Theta_t = \{w^{(b)}_t, w^{(s)}_t, c_t\}$ to the participating clients; (3) each client performs local optimisation against its private NetFlow records; and (4) the server aggregates returned parameters by data-weighted averaging.
+
 \begin{figure*}[!t]
 \centering
 \begin{tikzpicture}[
     font=\small,
-    server/.style={draw, rounded corners, fill=blue!8, minimum width=3.0cm, minimum height=1.1cm, align=center, thick},
-    client/.style={draw, rounded corners, fill=orange!12, minimum width=2.0cm, minimum height=0.85cm, align=center},
-    ksrc/.style={fill=red!10, draw, rounded corners, thick},
-    splinebox/.style={draw, fill=yellow!18, minimum width=0.95cm, minimum height=0.6cm, thick},
-    >=Stealth, node distance=0.8cm and 1.2cm
+    >=Stealth,
+    server/.style={draw, rounded corners=2pt, thick, fill=blue!7,
+                   minimum width=4.0cm, minimum height=1.3cm, align=center},
+    client/.style={draw, rounded corners=2pt, fill=orange!12,
+                   minimum width=2.1cm, minimum height=0.95cm, align=center},
+    stage/.style={circle, draw, thick, inner sep=0pt, minimum size=0.55cm,
+                  font=\bfseries\footnotesize},
+    stagelabel/.style={font=\bfseries\footnotesize, align=center},
+    bcast/.style={->, very thick, blue!70},
+    agg/.style  ={->, very thick, green!45!black, dashed},
 ]
-% --- Aggregation server ---
-\node[server] (srv) {Aggregation Server\\$\Theta_{t+1}=\sum_k \tfrac{N_k}{N}\Theta^{k}_{t+1}$};
+% --- Aggregation server (centered top) ---
+\node[server] (srv) {%
+  \textbf{Aggregation Server}\\[1pt]
+  \footnotesize $\Theta_{t+1}=\displaystyle\sum_{k\in\mathcal{S}_t}\!\frac{N_k}{N_{\mathcal{S}_t}}\,\Theta^{k}_{t+1}$};
+
+% --- Stage 1 marker (top of server) ---
+\node[stage, above left=0.05cm and -0.6cm of srv.north] (s1) {1};
+\node[stagelabel, anchor=south west] at ($(s1.east)+(0.05,0)$)
+  {Init $(n_h, G, k)$};
 
 % --- Clients along bottom ---
-\node[client, below=1.7cm of srv, xshift=-3.6cm] (c1) {IoT Client 1};
-\node[client, below=1.7cm of srv, xshift=-1.2cm] (c2) {IoT Client 2};
-\node[client, below=1.7cm of srv, xshift=1.2cm] (cdots) {$\cdots$};
-\node[client, below=1.7cm of srv, xshift=3.6cm, fill=red!12] (ck) {IoT Client $K$};
+\node[client, below=2.1cm of srv, xshift=-4.5cm] (c1) {IoT Client 1\\\scriptsize $\mathcal{D}_1, \rho_1$};
+\node[client, below=2.1cm of srv, xshift=-1.7cm] (c2) {IoT Client 2\\\scriptsize $\mathcal{D}_2, \rho_2$};
+\node[client, below=2.1cm of srv, xshift= 1.1cm] (cd) {$\cdots$};
+\node[client, below=2.1cm of srv, xshift= 4.0cm, fill=red!10] (ck) {IoT Client $K$\\\scriptsize $\mathcal{D}_K, \rho_K$};
 
-% --- Broadcast (down) and aggregate (up) arrows ---
-\foreach \c in {c1,c2,cdots,ck}{
-    \draw[->, thick, blue!75] (srv) -- (\c);
-    \draw[->, dashed, thick, green!50!black] (\c) to[bend left=14] (srv);
+% --- Broadcast arrows (downward) ---
+\foreach \c in {c1,c2,cd,ck} {
+    \draw[bcast] (srv.south) -- (\c.north);
 }
 
-% --- Stage labels around the loop ---
-\node[red!70!black, font=\bfseries\scriptsize, above=0.0cm of srv]
-  {(1) Init: grid $G$, order $k$};
-\node[blue!70!black, font=\bfseries\scriptsize, align=center,
-      left=0.4cm of srv, yshift=-1.2cm]
-  {(2) Broadcast\\$\Theta_t$};
-\node[green!40!black, font=\bfseries\scriptsize, align=center,
-      right=0.4cm of srv, yshift=-1.2cm]
-  {(4) Aggregate\\$\{\Theta^{k}_{t+1}\}$};
+% --- Aggregate arrows (upward, dashed, curved) ---
+\foreach \c in {c1,c2,cd,ck} {
+    \draw[agg] (\c.north) to[bend right=12] (srv.south);
+}
 
-% --- Zoom of local KAN at right ---
-\begin{scope}[shift={(8.5cm,-1.0cm)}]
-    \node[draw, rounded corners, ksrc, minimum width=6.5cm,
-          minimum height=4.2cm] (zoom) {};
-    \node[red!70!black, font=\bfseries, yshift=1.5cm] at (zoom.center)
-      {(3) Local KAN Optimisation};
+% --- Stage 2 (broadcast) ---
+\node[stage, fill=blue!12, anchor=center]
+  at ($(srv.south west)+(-0.3,-0.6)$) (s2) {2};
+\node[stagelabel, anchor=east] at ($(s2.west)+(-0.05,0)$)
+  {Broadcast $\Theta_t$};
 
-    \node[circle, draw, fill=blue!12, minimum size=0.55cm] (x1) at (6.4,0.5) {$x_1$};
-    \node[circle, draw, fill=blue!12, minimum size=0.55cm] (x2) at (6.4,-0.2) {$x_2$};
-    \node[circle, draw, fill=blue!12, minimum size=0.55cm] (xn) at (6.4,-1.0) {$x_d$};
+% --- Stage 4 (aggregate) ---
+\node[stage, fill=green!18, anchor=center]
+  at ($(srv.south east)+(0.3,-0.6)$) (s4) {4};
+\node[stagelabel, anchor=west] at ($(s4.east)+(0.05,0)$)
+  {Aggregate $\{\Theta^{k}_{t+1}\}$};
 
-    \node[splinebox] (s1) at (8.0,0.5)  {$\phi_{1,1}$};
-    \node[splinebox] (s2) at (8.0,-0.2) {$\phi_{2,1}$};
-    \node[splinebox] (sn) at (8.0,-1.0) {$\phi_{d,1}$};
+% --- Stage 3 marker (over the clients row) ---
+\node[stage, fill=orange!25] at ($(c1.south)+(0,-0.55)$) (s3a) {3};
+\node[stage, fill=orange!25] at ($(c2.south)+(0,-0.55)$) {3};
+\node[stage, fill=orange!25] at ($(ck.south)+(0,-0.55)$) (s3b) {3};
+\node[stagelabel, below=0.05cm of s3a, anchor=north]
+  {Local KAN training};
 
-    \node[circle, draw, fill=green!15, minimum size=0.55cm] (sum) at (9.4,-0.2) {$\Sigma$};
-    \node[circle, draw, fill=violet!18, minimum size=0.55cm] (out) at (10.6,-0.2) {$\hat y$};
-
-    \foreach \i/\s in {x1/s1,x2/s2,xn/sn}{\draw[->] (\i) -- (\s);}
-    \foreach \s in {s1,s2,sn}{\draw[->] (\s) -- (sum);}
-    \draw[->] (sum) -- (out);
-
-    \node[font=\scriptsize, align=center, below=0.05cm of zoom.south]
-      {Learnable B-spline activation $\phi_{q,p}(x)
-       = w^{(b)}_{q,p}\sigma(x)+w^{(s)}_{q,p}\sum_i c_{q,p,i}B_i(x)$};
-\end{scope}
-
-% Connect last client to zoom
-\draw[->, very thick, violet!60] (ck.east) to[bend right=12] (zoom.west);
+% --- Heterogeneity hint below client row ---
+\node[font=\footnotesize, align=center,
+      below=1.45cm of c2, xshift=1.3cm]
+  {$\rho_k\sim\mathrm{Dirichlet}(\alpha)$:
+   small $\alpha\Rightarrow$ extreme non-IID};
 \end{tikzpicture}
-\caption{Overview of the FedKAN-IDS framework. In each communication round, the aggregation server (1) initialises the global KAN parameters with grid size $G$ and B-spline order $k$, (2) broadcasts $\Theta_t$ to a sampled client subset, (3) each IoT client locally trains a KAN whose edges are learnable B-spline activations~\eqref{eq:edge}, and (4) the server aggregates the returned local parameters by data-weighted averaging. The right-hand zoom illustrates a single KAN layer of input dimension $d$ producing a hidden unit; the full client model stacks an input KAN layer ($d \to n_h$) and an output KAN layer ($n_h \to c$).}
+\caption{Main flow of FedKAN-IDS over one communication round. (1) The server initialises the global KAN with hyperparameters $(n_h, G, k)$; (2) broadcasts the current parameters $\Theta_t = \{w^{(b)}_t, w^{(s)}_t, c_t\}$; (3) each IoT client trains locally on its private $\mathcal{D}_k$ whose class proportions $\rho_k$ are drawn from a Dirichlet with concentration $\alpha$; (4) the server computes the data-weighted average of returned local parameters element-wise on each of $\{w^{(b)}, w^{(s)}, c\}$. The structure of one client's KAN layer (stage~3 detail) is shown in Fig.~\ref{fig:kan-arch}.}
 \label{fig:flow}
 \end{figure*}
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+    font=\small, >=Stealth,
+    inputnode/.style={circle, draw, fill=blue!10, minimum size=0.6cm,
+                      inner sep=0pt},
+    spline/.style   ={draw, rounded corners=1pt, fill=yellow!22, thick,
+                      minimum width=1.55cm, minimum height=0.65cm},
+    sumnode/.style  ={circle, draw, fill=green!15, minimum size=0.7cm,
+                      inner sep=0pt, thick},
+    outnode/.style  ={circle, draw, fill=violet!20, minimum size=0.7cm,
+                      inner sep=0pt, thick},
+]
+% --- Input nodes ---
+\node[inputnode] (x1) at (0,1.4)  {$x_1$};
+\node[inputnode] (x2) at (0,0.55) {$x_2$};
+\node[font=\bfseries] at (0,-0.1) {$\vdots$};
+\node[inputnode] (xd) at (0,-0.85) {$x_d$};
+
+% --- B-spline edge boxes ---
+\node[spline] (s1) at (2.1,1.4)  {$\phi_{1,q}(x_1)$};
+\node[spline] (s2) at (2.1,0.55) {$\phi_{2,q}(x_2)$};
+\node[font=\bfseries] at (2.1,-0.1) {$\vdots$};
+\node[spline] (sd) at (2.1,-0.85) {$\phi_{d,q}(x_d)$};
+
+% --- Edge connections (input -> spline) ---
+\foreach \i/\s in {x1/s1, x2/s2, xd/sd} {
+    \draw[->, thick] (\i) -- (\s);
+}
+
+% --- Sum node ---
+\node[sumnode] (sum) at (4.4,0.27) {$\sum$};
+
+% --- Spline -> sum ---
+\foreach \s in {s1,s2,sd} {
+    \draw[->, thick] (\s) -- (sum);
+}
+
+% --- Output (one hidden unit q) ---
+\node[outnode] (h) at (5.9,0.27) {$h_q$};
+\draw[->, thick] (sum) -- (h);
+
+% --- Layer labels ---
+\node[font=\footnotesize, anchor=south] at (0,1.95)
+  {\textbf{Input}};
+\node[font=\footnotesize, anchor=south] at (2.1,1.95)
+  {\textbf{Learnable B-spline edges}};
+\node[font=\footnotesize, anchor=south] at (5.15,1.95)
+  {\textbf{Hidden unit $q$}};
+
+% --- Equation below ---
+\node[font=\footnotesize, align=center, anchor=north]
+  at (3.0,-1.7)
+  {$\phi_{p,q}(x_p) \;=\;
+   w^{(b)}_{p,q}\,\sigma(x_p)
+   \;+\;
+   w^{(s)}_{p,q}\!\!\sum_{i=1}^{G+k} c_{p,q,i}\,B_i(x_p)$};
+\node[font=\scriptsize, align=center, anchor=north]
+  at (3.0,-2.4)
+  {SiLU residual base $\sigma$\;\,+\,\;order-$k$ B-spline expansion on $G$ grid points};
+\end{tikzpicture}
+\caption{Sub-flow: structure of one KAN layer producing hidden unit $h_q$ from input vector $\mathbf{x}\in\mathbb{R}^d$. Each edge $(p,q)$ carries an independent learnable activation $\phi_{p,q}$ parameterised as a SiLU residual base plus a B-spline expansion on a uniform grid of $G$ points (order $k$). The full client model stacks an input layer ($d \to n_h$) and an output layer ($n_h \to c$). The B-spline coefficients $c_{p,q,i}$ have local support, which is the key structural property exploited by Theorem~\ref{thm:conv}.}
+\label{fig:kan-arch}
+\end{figure}
 
 Each IoT client $C_k$ instantiates a single-hidden-layer KAN
 \begin{equation}
