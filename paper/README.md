@@ -31,9 +31,9 @@ so the paper updates automatically whenever `scripts/aggregate.py`, `scripts/plo
 
 | Section | Status |
 |---|---|
-| I.   Introduction | skeleton + contributions list |
+| I.   Introduction | **complete** — full motivation, KAN-FL related work, contributions |
 | II.  Preliminaries | **complete** — Defs 1, 2 |
-| III. Method | skeleton — to expand once TikZ figure is in |
+| III. Method | **complete** — TikZ flow figure, Algorithms 1 + 2, cost discussion |
 | IV.  Theory | **complete** — Props 1, 2; Lemma 1; Theorem 1; Corollary |
-| V.   Experiments | skeleton with prose hook for headline / worst-seed / per-class tables |
+| V.   Experiments | skeleton with hooks for headline / worst-seed / per-class tables; awaiting M3c data |
 | VI.  Conclusion | skeleton + threats-to-validity bullets |
