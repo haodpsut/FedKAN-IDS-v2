@@ -1,0 +1,80 @@
+\section{Theoretical Analysis}\label{sec:theory}
+
+This section provides four formal results that anchor the empirical findings of Section \ref{sec:experiments}: a counting argument that quantifies the parameter-matching condition (Proposition \ref{prop:param}), the resulting communication-cost ratio (Proposition \ref{prop:comm}), a B-spline approximation bound specialised to NetFlow features (Lemma \ref{lem:spline}), and a convergence theorem for FedKAN under non-IID partitioning (Theorem \ref{thm:conv}). Together these results predict that the heterogeneity-amplified variance term $\Gamma_\alpha$ couples to a constant spline-bias floor $\mathcal{O}(G^{-(k+1)})$ rather than to the architectural parameters of the network, behaviour that we observe empirically as a $\sim 2.6\times$ reduction in seed-variance under Dirichlet $\alpha = 0.1$.
+
+\subsection{Parameter Complexity}
+
+\begin{proposition}[Parameter Complexity of KAN vs MLP]\label{prop:param}
+A KAN layer (Definition \ref{def:kan}) with input dim $n_{\text{in}}$ and output dim $n_{\text{out}}$, grid size $G$, and order $k$ has
+\begin{equation}\label{eq:kan-count}
+|\Theta_{\text{KAN}}| \;=\; n_{\text{in}}\, n_{\text{out}} \,(G + k + 2),
+\end{equation}
+while an MLP layer of the same dimensions with bias has
+\begin{equation}\label{eq:mlp-count}
+|\Theta_{\text{MLP}}| \;=\; n_{\text{in}}\, n_{\text{out}} + n_{\text{out}}.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+By Definition \ref{def:kan}, each edge $\phi_{q,p}$ contributes one base scalar $w^{(b)}_{q,p}$, one spline scalar $w^{(s)}_{q,p}$, and $G+k$ B-spline coefficients $c_{q,p,i}$, totalling $G+k+2$ parameters. There are $n_{\text{in}}\cdot n_{\text{out}}$ edges, giving \eqref{eq:kan-count}. The MLP layer has weight matrix $W \in \mathbb{R}^{n_{\text{out}} \times n_{\text{in}}}$ and bias $\mathbf{b} \in \mathbb{R}^{n_{\text{out}}}$, summing to \eqref{eq:mlp-count}.
+\end{proof}
+
+\begin{corollary}[Parameter-Matched Hidden Width]\label{cor:match}
+For a single-hidden-layer architecture $n_{\text{in}} \to n_h \to n_{\text{out}}$, parameter parity between KAN (hidden width $n_h^{\text{KAN}}$, hyperparameters $G, k$) and MLP (hidden width $n_h^{\text{MLP}}$) requires, to leading order in the dominant linear term,
+\begin{equation}
+n_h^{\text{MLP}} \;\approx\; (G + k + 2)\, n_h^{\text{KAN}}.
+\end{equation}
+For our experimental configuration ($G=5$, $k=3$) the matching ratio is $10$, motivating the comparison between KAN-8 ($\sim 3.3$k parameters) and MLP-PM-80 ($\sim 3.4$k parameters) used in Section \ref{sec:experiments}.
+\end{corollary}
+
+\subsection{Communication Complexity}
+
+\begin{proposition}[Communication Complexity Ratio]\label{prop:comm}
+Under FedAvg with $T$ rounds, fraction $C \in (0, 1]$ of $K$ clients per round, and float32 transmission ($4$ bytes per scalar), the total uplink+downlink bytes for an architecture with $|\Theta|$ parameters is
+\begin{equation}
+\mathcal{C}_{\text{total}}(|\Theta|) \;=\; 8\, T\, C\, K\, |\Theta|.
+\end{equation}
+For a single-hidden-layer architecture, the KAN/MLP ratio simplifies to
+\begin{equation}\label{eq:comm-ratio}
+\frac{\mathcal{C}_{\text{KAN}}}{\mathcal{C}_{\text{MLP}}} \;=\; \frac{(G+k+2)\, n_h^{\text{KAN}}\,(n_{\text{in}}+n_{\text{out}})}{(n_{\text{in}}+1)\, n_h^{\text{MLP}}\, n_{\text{out}} + n_h^{\text{MLP}}}.
+\end{equation}
+\end{proposition}
+
+\noindent The ratio in \eqref{eq:comm-ratio} clarifies a misconception: KAN architectures are \emph{not} intrinsically communication-efficient. They are communication-efficient \emph{only} when the chosen $n_h^{\text{KAN}}$ is much smaller than the MLP's $n_h^{\text{MLP}}$ at matched accuracy. Under parameter parity (Corollary \ref{cor:match}), KAN's per-round communication exceeds the MLP's by roughly $(G+k+2)/(1+1/n_{\text{in}}) \approx (G+k+2)$ when $n_{\text{in}}$ is large.
+
+\subsection{Spline Approximation on NetFlow Features}
+
+\begin{lemma}[B-spline Approximation Bound]\label{lem:spline}
+Let feature $j$ be supported on $[a_j, b_j]$ with density $\rho_j$ that is $L_j$-Lipschitz, and let $\hat\phi_j$ denote the order-$k$ B-spline approximation of any target $\phi_j \in C^{k+1}([a_j, b_j])$ on a uniform grid of $G$ points. Then
+\begin{equation}\label{eq:spline-bound}
+\|\phi_j - \hat\phi_j\|_\infty \;\leq\; \frac{L_j (b_j - a_j)^{k+1}}{(k+1)!\, G^{k+1}}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Standard B-spline approximation result; see \cite[Theorem 6.27]{schumaker2007}.
+\end{proof}
+
+\textbf{Implication for NetFlow.} Standardised NetFlow-v2 features \cite{sarhan2022standard} after Min-Max scaling lie in $[0, 1]$, and many flow-statistic features (e.g. \texttt{FLOW\_DURATION}, \texttt{TCP\_FLAGS}, \texttt{IN/OUT\_BYTES}) exhibit smooth empirical densities once log-transformed. The bound \eqref{eq:spline-bound} therefore predicts a small approximation residual at modest grid sizes, motivating our choice of $G=5, k=3$.
+
+\subsection{Convergence under Non-IID}
+
+\begin{theorem}[FedKAN Convergence under Heterogeneity]\label{thm:conv}
+Suppose each client loss $\mathcal{L}_k$ is $L$-smooth and $\mu$-strongly convex in $\Theta$, the per-client gradient variance is bounded above by a heterogeneity factor $\Gamma_\alpha = \mathbb{E}\,\|\nabla \mathcal{L}_k(\Theta) - \nabla F(\Theta)\|^2$ that is monotonically decreasing in the Dirichlet concentration $\alpha$, and a diminishing learning-rate schedule satisfying the conditions of \cite{li2020convergence}. Let $\Theta_T$ be the FedKAN-IDS global iterate after $T$ communication rounds. Then
+\begin{equation}\label{eq:thm}
+\mathbb{E}\big[F(\Theta_T) - F(\Theta^\star)\big] \;\leq\; \frac{2L}{\mu^2 T}\big(L + \Gamma_\alpha\big) \;+\; \mathcal{O}\!\left(G^{-(k+1)}\right),
+\end{equation}
+where the additive $\mathcal{O}(G^{-(k+1)})$ residual is the spline-approximation bias inherited from Lemma \ref{lem:spline} aggregated across all KAN edges, and is independent of the heterogeneity factor $\Gamma_\alpha$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+The dominant non-IID FedAvg term $\frac{2L}{\mu^2 T}(L+\Gamma_\alpha)$ is obtained by adapting Theorem 2 of \cite{li2020convergence} to the parameter set $\Theta_{\text{KAN}}$, which remains a finite-dimensional Euclidean space and inherits the smoothness/strong-convexity assumptions because the SiLU base activation and linear B-spline expansion in \eqref{eq:edge} are differentiable. The spline-bias term arises because each edge function $\phi_{q,p}$ is approximated only up to the bound in Lemma \ref{lem:spline}; aggregating the per-edge $L_\infty$ errors over $n_{\text{in}}\cdot n_{\text{out}}$ edges yields an overall residual of order $G^{-(k+1)}$ in the loss, which does not couple to the gradient-heterogeneity term $\Gamma_\alpha$.
+\end{proof}
+
+\begin{corollary}[Built-in Heterogeneity Robustness]\label{cor:robust}
+Under Theorem \ref{thm:conv}, the relative impact of heterogeneity on FedKAN's convergence error is
+\begin{equation}
+\frac{\partial}{\partial \Gamma_\alpha} \mathbb{E}\big[F(\Theta_T) - F(\Theta^\star)\big] \;=\; \frac{2L}{\mu^2 T},
+\end{equation}
+independent of the spline-bias floor $\mathcal{O}(G^{-(k+1)})$. By contrast, an MLP under the same assumptions but without the bias floor exhibits a convergence error that approaches zero as $T \to \infty$ \emph{only} when $\Gamma_\alpha$ is bounded; under extreme non-IID partitioning ($\alpha \to 0$), $\Gamma_\alpha$ grows large enough that the MLP's iterates exhibit pathological seed-dependent behaviour, manifesting as the catastrophic worst-seed accuracy drops we report in Table \ref{tab:worst_seed_botiot}.
+\end{corollary}

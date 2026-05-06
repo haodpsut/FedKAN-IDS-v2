@@ -1,0 +1,12 @@
+\section{FedKAN-IDS Framework}\label{sec:method}
+
+% TODO: full method section. Skeleton:
+% - System architecture (Figure 1: TikZ flow)
+% - Server orchestration algorithm
+% - Client local optimisation algorithm
+% - NetFlow-specific design notes (why 43-feature input + 2/c-class output suits the
+%   TinyML target on Raspberry Pi-class gateways)
+% - Implementation details (efficient_kan, B-spline parametrisation)
+
+% This section will be expanded after the M3 experimental results stabilise.
+The FedKAN-IDS framework instantiates Definition \ref{def:fl-ids} with each client model $f(\Theta; \cdot)$ realised as a single-hidden-layer KAN of input dimension $n_{\text{in}}$, hidden width $n_h$, and output dimension equal to the number of classes. The full architecture is depicted in Figure \ref{fig:flow} (TikZ-rendered, see Section \ref{sec:experiments} for details). Server-side aggregation is data-weighted averaging applied element-wise to the three KAN parameter sets $\{w^{(b)}, w^{(s)}, c\}$.

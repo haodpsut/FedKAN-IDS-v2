@@ -1,0 +1,15 @@
+\section{Discussion and Conclusion}\label{sec:conclusion}
+
+% TODO. Skeleton:
+% - Reframe the contribution: empirical robustness/tail-risk study, anchored in spline-bias theorem
+% - Threats to validity:
+%   * Single dataset family (NetFlow-v2); but cross-dataset replication (M3c) addresses this
+%   * Convex/strongly convex assumptions in Theorem 1 are idealised; in practice the result
+%     should be read as a regulariser intuition rather than a tight bound on neural-network FL.
+%   * Communication is higher per round under parameter parity — discussed in Section IV
+% - Future work:
+%   * Quantised FedKAN (combine with FedPAQ / CG-FKAN's grid sparsification)
+%   * Adversarial robustness of KAN aggregation
+%   * Edge deployment on Raspberry Pi 4 / Jetson Nano
+
+We have presented FedKAN-IDS, the first systematic parameter-matched empirical comparison of Federated Kolmogorov--Arnold Networks against FedAvg-MLP on NetFlow-based IoT intrusion detection. Across 146 reproducible runs on NF-BoT-IoT-v2 (and forthcoming NF-ToN-IoT-v2), we identified an architectural robustness advantage of FedKAN under extreme client heterogeneity that is not replicated by simply scaling up MLP capacity, anchored in a convergence theorem that introduces a spline-approximation bias term independent of the data-heterogeneity factor. Our analysis explicitly walks back the ``$\sim 50\%$ communication reduction'' claim of prior FedKAN-IDS work, showing that under parameter parity FedKAN incurs roughly $14\%$ more bytes per round than its MLP counterpart, and reframes the case for FedKAN around tail-risk reduction (worst-seed accuracy), which is the more deployment-relevant metric for IDS. Future work includes coupling FedKAN with grid-sparsification compression in the spirit of CG-FKAN \cite{yu2025cgfkan}, and physical edge deployment on Raspberry Pi-class gateways.

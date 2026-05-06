@@ -1,0 +1,20 @@
+\section{Introduction}\label{sec:intro}
+
+% TODO: full intro. Bullet skeleton:
+% - IoT scale, IDS at edge, privacy
+% - FL paradigm, but bandwidth + heterogeneity issues
+% - KAN background (Liu et al.) + recent KAN-FL line (F-KANs, Sasse&deFarias, Fed-KAN, CG-FKAN, Lee, Zeleke)
+% - Our positioning: empirical study on the specific application of NetFlow IDS
+% - Three contributions:
+%   1. First systematic param-matched comparison of FedKAN vs FedAvg-MLP on three NetFlow-v2 datasets
+%   2. Heterogeneity-robustness finding (worst-seed +24pp, std 2.6x lower) anchored in a spline-bias
+%      convergence theorem
+%   3. Open code + configs + 146 reproducible runs, including statistical tests with seed-paired CIs
+
+\textbf{Contributions.} This paper makes the following contributions.
+\begin{itemize}
+\item We present the first systematic, parameter-matched empirical comparison of Federated Kolmogorov--Arnold Networks (FedKAN) against FedAvg-MLP on the three standardised NetFlow-v2 IDS datasets, under both binary and multi-class detection and three data-heterogeneity regimes (IID, Dirichlet $\alpha\in\{1.0, 0.1\}$).
+\item We identify a robustness/tail-risk advantage of FedKAN that is architectural rather than capacity-driven: a parameter-matched MLP suffers worst-seed accuracy drops of $\sim 24$ percentage points relative to FedKAN-8 under extreme non-IID, and doubling MLP capacity does not close this gap.
+\item We anchor the empirical finding in a convergence analysis (Theorem \ref{thm:conv}) that introduces a spline-bias term $\mathcal{O}(G^{-(k+1)})$ which is independent of the data-heterogeneity factor and acts as an effective regulariser.
+\item All code, dataset preparation scripts, and 146 reproducible runs are released at \url{https://github.com/haodpsut/FedKAN-IDS-v2}.
+\end{itemize}

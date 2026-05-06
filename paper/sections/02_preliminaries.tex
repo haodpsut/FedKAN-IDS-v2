@@ -1,0 +1,37 @@
+\section{Preliminaries and Problem Formulation}\label{sec:prelim}
+
+\subsection{Kolmogorov--Arnold Network Layer}
+
+Kolmogorov--Arnold Networks (KANs) \cite{liu2024kan} replace the fixed neuron-wise activations of an MLP with \emph{learnable} edge-wise activations parameterised as B-splines. Formally:
+
+\begin{definition}[KAN Layer]\label{def:kan}
+Given input $\mathbf{x} \in \mathbb{R}^{n_{\text{in}}}$, grid size $G \in \mathbb{N}$, and B-spline order $k \in \mathbb{N}$, a KAN layer is the map $\Phi: \mathbb{R}^{n_{\text{in}}} \to \mathbb{R}^{n_{\text{out}}}$
+\begin{equation}
+\Phi(\mathbf{x})_q \;=\; \sum_{p=1}^{n_{\text{in}}} \phi_{q,p}(x_p), \qquad q = 1, \ldots, n_{\text{out}},
+\end{equation}
+with each edge function
+\begin{equation}\label{eq:edge}
+\phi_{q,p}(x) \;=\; w^{(b)}_{q,p}\, \sigma(x) \;+\; w^{(s)}_{q,p}\, \sum_{i=1}^{G+k} c_{q,p,i}\, B_i(x),
+\end{equation}
+where $\sigma(\cdot) = \mathrm{SiLU}(\cdot)$ is the residual base activation, $\{B_i\}_{i=1}^{G+k}$ is a B-spline basis of order $k$ on a uniform grid of $G$ points, and $\Theta_{\text{KAN}} = \{w^{(b)}_{q,p}, w^{(s)}_{q,p}, c_{q,p,i}\}$ are learnable.
+\end{definition}
+
+By contrast, a fully-connected MLP layer with the same $(n_{\text{in}}, n_{\text{out}})$ employs a dense weight matrix $W \in \mathbb{R}^{n_{\text{out}} \times n_{\text{in}}}$, a bias $\mathbf{b} \in \mathbb{R}^{n_{\text{out}}}$, and a fixed scalar nonlinearity, so $\Theta_{\text{MLP}} = \{W, \mathbf{b}\}$. The architectural distinction relevant to our analysis is that each scalar weight in $W$ controls a global linear interaction, whereas each spline coefficient $c_{q,p,i}$ has \emph{local} support on the grid, by construction of the B-spline basis.
+
+\subsection{Communication-Constrained Federated IDS}
+
+\begin{definition}[Communication-Constrained Federated IDS]\label{def:fl-ids}
+Consider $K$ IoT clients. Client $C_k$ holds a private dataset $\mathcal{D}_k = \{(\mathbf{x}_i, y_i)\}_{i=1}^{N_k}$ with feature vectors $\mathbf{x}_i \in \mathbb{R}^d$ and labels $y_i \in \{0, 1, \ldots, c-1\}$, drawn independently from a per-client distribution $\mathcal{P}_k$. Heterogeneity across clients is modelled by drawing the per-class proportions of $\mathcal{P}_k$ from a Dirichlet distribution with concentration $\alpha > 0$ \cite{hsu2019measuring}: small $\alpha$ yields highly skewed $\mathcal{P}_k$ (extreme non-IID), while $\alpha \to \infty$ recovers the IID setting.
+
+Given a model $f(\Theta; \cdot)$ and a per-client empirical loss
+\begin{equation}
+\mathcal{L}_k(\Theta) \;=\; \frac{1}{N_k}\sum_{i=1}^{N_k} \ell\big(f(\Theta; \mathbf{x}_i),\, y_i\big),
+\end{equation}
+the federated IDS objective is
+\begin{equation}\label{eq:fl-obj}
+\min_{\Theta} \; F(\Theta) \;=\; \sum_{k=1}^{K} \frac{N_k}{N}\, \mathcal{L}_k(\Theta) \quad\text{s.t.}\quad \sum_{t=1}^{T} \mathcal{C}_t \;\leq\; \mathcal{B},
+\end{equation}
+where $N = \sum_k N_k$, $\mathcal{C}_t$ is the per-round bytes summed across participating clients, and $\mathcal{B}$ is the deployment bandwidth budget.
+\end{definition}
+
+In a synchronous FedAvg \cite{mcmahan2017fedavg} solver of \eqref{eq:fl-obj}, each round $t$ samples a fraction $C \in (0, 1]$ of the clients, transmits the global parameters $\Theta_t$ to each, runs $E$ local epochs of stochastic gradient descent, and aggregates the resulting local parameters $\{\Theta_{t+1}^k\}$ by data-weighted averaging.

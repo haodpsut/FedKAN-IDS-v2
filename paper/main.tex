@@ -1,0 +1,55 @@
+% FedKAN-IDS-v2 — IoT-J target submission
+% Compile: pdflatex main && bibtex main && pdflatex main && pdflatex main
+\documentclass[journal]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{multirow}
+
+\graphicspath{{../results/figures/}}
+
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+
+\begin{document}
+
+\title{FedKAN-IDS: Heterogeneity-Robust Federated Kolmogorov--Arnold Networks for NetFlow-Based IoT Intrusion Detection}
+
+\author{
+    Phuc~Hao~Do,
+    Van~Long~Nguyen,
+    Truong~Duy~Dinh
+    % \thanks{...}
+}
+
+\maketitle
+
+\begin{abstract}
+Federated Learning (FL) for IoT intrusion detection systems (IDS) faces a fundamental tension between the bandwidth budget of edge devices and the catastrophic accuracy degradation that dense neural network architectures exhibit when client data is heterogeneously distributed. We present \textbf{FedKAN-IDS}, the first systematic study of Federated Kolmogorov--Arnold Networks (KANs) on NetFlow-based IoT intrusion detection, with a contribution that is empirical rather than methodological: we show that under extreme client heterogeneity (Dirichlet $\alpha = 0.1$), the worst-seed binary detection accuracy of FedKAN-8 ($\sim 3.3$k parameters) is $80.7\%$, while a parameter-matched FedAvg-MLP at $\sim 3.4$k parameters drops to $56.5\%$ on the same partition. Doubling MLP capacity does not close this gap, indicating an architectural rather than capacity-driven advantage. The seed-paired bootstrap $95\%$ confidence interval for the FedKAN--MLP-PM accuracy difference is $[+0.50, +14.57]$ percentage points across $n=10$ seeds, and FedKAN's per-class F1 on the DoS attack class is $+8$ percentage points higher than the parameter-matched MLP under multi-class non-IID. We anchor the empirical finding in a convergence analysis showing that the KAN B-spline approximation introduces an additive $\mathcal{O}(G^{-(k+1)})$ bias term that is independent of the data-heterogeneity factor $\Gamma_\alpha$, behaving as an effective regulariser. Code, configurations, and 146 reproducible runs are publicly available.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Federated Learning, Kolmogorov-Arnold Networks, IoT Security, Intrusion Detection, Non-IID, Robustness
+\end{IEEEkeywords}
+
+\input{sections/01_intro}
+\input{sections/02_preliminaries}
+\input{sections/03_method}
+\input{sections/04_theory}
+\input{sections/05_experiments}
+\input{sections/06_conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

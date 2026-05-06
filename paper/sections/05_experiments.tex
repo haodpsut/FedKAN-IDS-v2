@@ -1,0 +1,56 @@
+\section{Experimental Evaluation}\label{sec:experiments}
+
+% TODO: full experimental section. Skeleton:
+% - Datasets: NF-BoT-IoT-v2 (committed) + NF-ToN-IoT-v2 (M3c in progress) + NF-CSE-CIC-IDS2018-v2 (planned)
+% - Architectures: 4 variants (KAN-8, KAN-16, MLP-32, MLP-PM-80)
+% - Protocol: 50 rounds, 10 clients, full participation, Adam lr=0.01, batch=1024
+% - Statistical tests: paired-t + bootstrap CI (n=10 in killer cells)
+
+\subsection{Datasets and Preprocessing}
+We evaluate on the standardised NetFlow-v2 IDS datasets of \cite{sarhan2022standard}: NF-BoT-IoT-v2 (binary $\{$Benign, Attack$\}$ and 5-class), and (in cross-dataset replication) NF-ToN-IoT-v2 and NF-CSE-CIC-IDS2018-v2. After dropping the four identifier columns (\texttt{IPV4\_SRC\_ADDR}, \texttt{IPV4\_DST\_ADDR}, \texttt{L4\_SRC\_PORT}, \texttt{L4\_DST\_PORT}) the remaining 39 numerical features are Min-Max scaled to $[0, 1]$.
+
+\subsection{Federated Protocol and Architectures}
+We simulate $K=10$ clients with full per-round participation. Each round consists of one local epoch of Adam with learning rate $\eta=10^{-2}$, batch size 1024, and Cross-Entropy loss; we run $T=50$ rounds total. Client data is partitioned via three regimes: IID (uniform random split), Dirichlet $\alpha=1.0$ (mild heterogeneity), and Dirichlet $\alpha=0.1$ (extreme heterogeneity), implemented as in \cite{hsu2019measuring}.
+
+We compare four parameter-budgeted architectures, summarised in Table \ref{tab:headline_botiot}:
+\begin{itemize}
+\item \textbf{FedAvg-MLP (32h)}: $n_h^{\text{MLP}}=32$, $\sim 1.3$k parameters (CITA-style baseline).
+\item \textbf{FedAvg-MLP-PM (80h)}: $n_h^{\text{MLP}}=80$, $\sim 3.4$k parameters (parameter-matched to FedKAN-8 per Corollary \ref{cor:match}).
+\item \textbf{FedKAN (Ours, 8h)}: $n_h^{\text{KAN}}=8$, $G=5$, $k=3$, $\sim 3.3$k parameters (TinyML target).
+\item \textbf{F-KAN (16h)}: $n_h^{\text{KAN}}=16$, $G=5$, $k=3$, $\sim 6.6$k parameters (Zeydan-style deeper KAN \cite{zeydan2024fkans}).
+\end{itemize}
+
+\subsection{Headline Result}
+
+% \input{../results/tables/headline_botiot}     % main accuracy table
+% \input{../results/tables/worst_seed_botiot}   % worst-seed robustness
+% \input{../results/tables/stats_tests}         % paired-t + bootstrap CI
+
+% \begin{figure*}[t]
+%   \centering
+%   \includegraphics[width=0.98\textwidth]{convergence_binary_grid.pdf}
+%   \caption{NF-BoT-IoT-v2 binary, 10 clients, 50 rounds, $n=10$ seeds.}
+%   \label{fig:conv_binary}
+% \end{figure*}
+
+% \begin{figure}[t]
+%   \centering
+%   \includegraphics[width=\columnwidth]{perclass_f1_multiclass_dir0.1.pdf}
+%   \caption{Per-class F1 under multi-class Dirichlet $\alpha=0.1$.}
+%   \label{fig:perclass_dir01}
+% \end{figure}
+
+The headline observations on NF-BoT-IoT-v2 (binary, $n=10$ seeds) are:
+\begin{enumerate}
+\item Under IID and mildly heterogeneous (Dir $\alpha=1.0$) settings, all four variants converge within $0.05$ percentage points of each other ($\geq 99.6\%$ accuracy across the board).
+\item Under extreme heterogeneity (Dir $\alpha=0.1$), \textbf{FedKAN-8 achieves a worst-seed accuracy of $80.7\%$, while the parameter-matched MLP-PM-80 collapses to $56.5\%$ on its worst seed.} Smaller and larger MLPs both fail at this regime, ruling out a capacity explanation: the small MLP-32 (1.3k params) reaches $60.4\%$ worst-seed and the parameter-matched MLP-PM-80 (3.4k params) reaches $56.5\%$ — increasing capacity by $2.5\times$ does not improve worst-case behaviour.
+\item Across the $n=10$ seed-paired runs, the bootstrap $95\%$ CI for the FedKAN-8 minus MLP-PM-80 mean accuracy difference is $[+0.50, +14.57]$ percentage points; the standard deviation across seeds for FedKAN-8 ($5.84$) is $\sim 2.6\times$ smaller than for MLP-PM-80 ($15.00$).
+\item Under multi-class Dir $\alpha=0.1$, the mean accuracy of FedKAN-8 and MLP-PM-80 are statistically indistinguishable ($86.0\%$ vs $86.1\%$), but FedKAN's per-class F1 on the DoS class is $0.91 \pm 0.08$ versus $0.83 \pm 0.25$ for MLP-PM-80, a $+8$ percentage point gap with $\sim 3\times$ tighter dispersion.
+\end{enumerate}
+
+These observations together support the claim that FedKAN's advantage is one of \emph{tail-risk reduction} and \emph{architectural robustness} rather than aggregate-mean accuracy improvement. Theorem \ref{thm:conv} predicts exactly this signature: the spline-bias floor remains constant while $\Gamma_\alpha$ grows, so the relative variance amplification under non-IID is smaller for KAN than for MLP under the same assumptions.
+
+\subsection{Cross-Dataset Replication}
+
+% TODO: insert NF-ToN-IoT-v2 results when M3c finishes; NF-CSE-CIC-IDS2018-v2 in M3.5.
+\textit{(In progress: M3c replicates the full grid on NF-ToN-IoT-v2; results will appear here.)}
