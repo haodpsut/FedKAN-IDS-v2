@@ -31,4 +31,4 @@ output:
   save_state_dict: false
 _resolved:
   seed: 2026
-  device: cpu
+  device: cuda
