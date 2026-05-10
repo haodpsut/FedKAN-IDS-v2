@@ -10,4 +10,7 @@ preprocess:
   binary_label_column: Label
   multiclass_label_column: Attack
   scaler: minmax
-  downsample_majority_to: null   # set integer to balance training set
+  log1p: false                       # BoT-IoT preprocessing for the 96 already-committed runs
+  clip_hi_quantile: 1.0              # disable outlier clip for backwards compat
+  clip_lo_quantile: 0.0
+  downsample_majority_to: null

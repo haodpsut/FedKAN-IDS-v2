@@ -62,7 +62,18 @@ def _read_table(path: Path) -> pd.DataFrame:
 
 
 def preprocess_raw_csv(csv_path: Path, ds_cfg: dict) -> tuple[pd.DataFrame, dict]:
-    """Apply Sarhan-style cleanup; returns (parquet-ready df, meta dict)."""
+    """Apply Sarhan-style cleanup; returns (parquet-ready df, meta dict).
+
+    Robust against the NF-ToN-IoT-v2 / Dhoogla-mirror failure mode where a
+    handful of extreme-outlier rows (some carrying float-overflow / inf
+    values for byte counts) compress every other sample to ~0 after a naive
+    Min-Max scaling. We:
+      1. coerce features to numeric in float64,
+      2. replace +/-inf with NaN and drop those rows,
+      3. clip per-column to the [0.01, 99.99] quantile band,
+      4. cast to float32 (now safe, no overflow),
+      5. Min-Max scale into [0, 1].
+    """
     df = _read_table(csv_path)
     print(f"[netflow_v2] loaded {csv_path.name}: shape={df.shape}, "
           f"first cols={list(df.columns)[:8]}")
@@ -81,12 +92,48 @@ def preprocess_raw_csv(csv_path: Path, ds_cfg: dict) -> tuple[pd.DataFrame, dict
 
     # Numeric features (drop labels).
     feature_cols = [c for c in df.columns if c not in (bin_col, mc_col)]
-    # Some columns can be object dtype with stray strings; coerce numerics.
+
+    # Step 1: coerce to numeric, in float64 (no premature overflow).
     df[feature_cols] = df[feature_cols].apply(pd.to_numeric, errors="coerce")
+    df[feature_cols] = df[feature_cols].astype(np.float64)
+
+    # Step 2: scrub +/-inf and NaN.
+    n_before = len(df)
+    df[feature_cols] = df[feature_cols].replace([np.inf, -np.inf], np.nan)
     df = df.dropna(subset=feature_cols).reset_index(drop=True)
+    n_dropped = n_before - len(df)
+    if n_dropped:
+        print(f"[netflow_v2] dropped {n_dropped:,} rows with NaN/inf features "
+              f"({n_dropped / n_before * 100:.2f}%)")
+
+    # Step 3: clip extreme outliers per column. The lower percentile is
+    # protective against rare large negative values; the upper percentile
+    # is the one that actually matters for byte/packet count features.
+    lo_q = pp.get("clip_lo_quantile", 0.0001)
+    hi_q = pp.get("clip_hi_quantile", 0.9999)
+    if hi_q < 1.0 or lo_q > 0.0:
+        clip_lo = df[feature_cols].quantile(lo_q)
+        clip_hi = df[feature_cols].quantile(hi_q)
+        df[feature_cols] = df[feature_cols].clip(
+            lower=clip_lo, upper=clip_hi, axis=1
+        )
+        print(f"[netflow_v2] clipped to [{lo_q:.4f}, {hi_q:.4f}] quantile band "
+              f"per feature column")
+
+    # Step 3.5: log1p compression for heavy-tail features. NetFlow byte/
+    # packet counts span 6+ orders of magnitude even after the percentile
+    # clip; without log compression a naive Min-Max would still bury the
+    # body of the distribution near zero. log1p(x) = log(1+x) is monotonic,
+    # zero-preserving, and well-defined for all non-negative inputs (which
+    # is every NetFlow feature post-drop of IPs/ports).
+    if pp.get("log1p", True):
+        df[feature_cols] = np.log1p(df[feature_cols].clip(lower=0))
+        print(f"[netflow_v2] applied log1p to feature columns")
+
+    # Step 4: now safe to downcast to float32.
     df[feature_cols] = df[feature_cols].astype(np.float32)
 
-    # Min-Max scale per column to [0, 1].
+    # Step 5: Min-Max scale per column to [0, 1].
     if pp.get("scaler", "minmax") == "minmax":
         col_min = df[feature_cols].min().to_numpy(dtype=np.float32)
         col_max = df[feature_cols].max().to_numpy(dtype=np.float32)
