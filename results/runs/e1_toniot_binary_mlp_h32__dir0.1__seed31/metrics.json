@@ -1,0 +1,36 @@
+{
+  "run_id": "e1_toniot_binary_mlp_h32__dir0.1__seed31",
+  "seed": 31,
+  "device": "cuda",
+  "model_name": "mlp",
+  "model_hidden": [
+    32
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "n_params": 1346,
+  "bytes_per_round_uplink": 5384,
+  "total_uplink_bytes": 2692000,
+  "final_metrics": {
+    "accuracy": 0.7850384615384616,
+    "f1_macro": 0.7749686411149825,
+    "f1_weighted": 0.7749686411149825,
+    "per_class_precision": [
+      0.9940666666666667,
+      0.7002972972972973
+    ],
+    "per_class_recall": [
+      0.5735,
+      0.996576923076923
+    ],
+    "per_class_f1": [
+      0.7273658536585366,
+      0.8225714285714286
+    ]
+  },
+  "best_accuracy": 0.7886346153846154,
+  "rounds": 50
+}
