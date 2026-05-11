@@ -1,0 +1,36 @@
+{
+  "run_id": "e1_cseciic_binary_mlp_h32__dir0.1__seed2024",
+  "seed": 2024,
+  "device": "cuda",
+  "model_name": "mlp",
+  "model_hidden": [
+    32
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "n_params": 1346,
+  "bytes_per_round_uplink": 5384,
+  "total_uplink_bytes": 2692000,
+  "final_metrics": {
+    "accuracy": 0.9243653846153846,
+    "f1_macro": 0.9242596380452184,
+    "f1_weighted": 0.9242596380452185,
+    "per_class_precision": [
+      0.9586398969115019,
+      0.8948573882546613
+    ],
+    "per_class_recall": [
+      0.887,
+      0.9617307692307693
+    ],
+    "per_class_f1": [
+      0.9214295702898696,
+      0.9270897058005673
+    ]
+  },
+  "best_accuracy": 0.9324038461538462,
+  "rounds": 50
+}
