@@ -1,0 +1,34 @@
+seed: 42
+device: auto
+experiment:
+  id: e1_toniot_binary_kan_h16
+  description: "NF-BoT-IoT-v2 grid base \u2014 overridden per run via CLI flags."
+data:
+  name: nf_toniot_v2
+  mode: binary
+  partition: dirichlet
+  alpha: 0.1
+  test_ratio: 0.2
+  n_clients: 10
+  downsample_per_class: 130000
+fl:
+  rounds: 50
+  fraction: 1.0
+  local_epochs: 1
+  batch_size: 1024
+  lr: 0.01
+  optimizer: adam
+  weight_decay: 0.0
+model:
+  name: kan
+  hidden:
+  - 16
+  grid_size: 5
+  spline_order: 3
+output:
+  dir: results/runs
+  save_per_round: true
+  save_state_dict: false
+_resolved:
+  seed: 43
+  device: cuda
