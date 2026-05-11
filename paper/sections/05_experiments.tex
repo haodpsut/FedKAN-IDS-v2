@@ -74,6 +74,27 @@ To rule out a single-dataset artefact we replicate the heterogeneity-robustness 
 
 \input{../results/tables/stats_tests_toniot.tex}
 
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.96\textwidth]{cross_dataset_convergence.pdf}
+\caption{Cross-dataset binary detection under Dirichlet $\alpha = 0.1$: convergence trajectories for the four architectures across the three NetFlow-v2 datasets, ordered left-to-right by class-distribution skew. Solid lines are seed-mean accuracy, shaded bands are $\pm 1$~std. On the most skewed dataset (a), MLP-PM-80 (purple) plateaus $\sim 6$ percentage points below FedKAN (red, green). On the least skewed dataset (c), all four variants reach $\geq 93\%$. Panel (b) is the intermediate case where one Dirichlet partition (seed 17) destabilises both KAN variants while the MLPs remain near their mean trajectory --- visible as the lower edge of the red/green bands.}
+\label{fig:cross-conv}
+\end{figure*}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{skew_advantage_gradient.pdf}
+\caption{The FedKAN-8 accuracy advantage over the parameter-matched FedAvg-MLP-PM-80 (binary Dir $\alpha = 0.1$) versus the underlying dataset's class-distribution skew. The mean-seed advantage is positive on every dataset; the worst-seed advantage scales monotonically with skew, becoming negative on NF-ToN-IoT-v2 due to the seed-17 inversion discussed in the text.}
+\label{fig:gradient}
+\end{figure}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.96\textwidth]{seed_distribution.pdf}
+\caption{Per-seed binary Dir $\alpha = 0.1$ accuracy as a strip plot, one panel per dataset. Each dot is one seed. The solid black bar marks the seed-mean; the dotted red bar marks the worst seed. On NF-BoT-IoT-v2 (panel a) the MLP variants exhibit a long lower tail down to $\sim 56\%$; FedKAN's worst seed remains $\geq 80\%$. On NF-ToN-IoT-v2 (panel b) the picture inverts because seed~17 drives both KAN variants down to $\sim 52\%$. On NF-CSE-CIC-IDS2018-v2 (panel c) all variants cluster tightly above $92\%$.}
+\label{fig:seed-strip}
+\end{figure*}
+
 \textbf{The mean-accuracy advantage replicates across all three datasets.} The seed-paired mean accuracy advantage of FedKAN-8 over the parameter-matched FedAvg-MLP-PM-80 under binary Dir $\alpha = 0.1$ is consistent in direction and statistically credible on every dataset we tested:
 \begin{itemize}
 \item NF-BoT-IoT-v2 ($n{=}10$): $+6.00$~pp, bootstrap $95\%$ CI $[+0.50, +14.57]$ (excludes zero), Cohen's $d = +0.53$.
