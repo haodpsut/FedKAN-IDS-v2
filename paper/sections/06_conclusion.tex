@@ -20,7 +20,7 @@ The value of FedKAN-IDS, we argue, lies elsewhere: in its \emph{tail-risk profil
 
 \textbf{No compression baselines.} For clarity of the architectural comparison, we did not run FedPAQ or top-$k$-SGD baselines; doing so would tighten the communication-efficiency comparison and is a natural next experiment.
 
-\textbf{Compute-side cost.} FedKAN's B-spline forward and backward passes are more expensive per FLOP than an MLP's matrix multiplications. We measured wall-clock per round as $2.1$--$2.8$~s for FedKAN versus $1.8$--$2.4$~s for MLP-PM on a single A100, well within any IoT FL deployment budget. Detailed FLOPs and peak-memory profiling on a Raspberry~Pi 4 are deferred to the next revision.
+\textbf{Compute-side cost.} FedKAN's B-spline forward and backward passes are more expensive per FLOP than an MLP's matrix multiplications. We measured per-round wall-clock as $2.1$--$2.8$~s for FedKAN versus $1.8$--$2.4$~s for MLP-PM on a Colab Pro+ NVIDIA A100, and $1.8$--$2.5$~s versus $1.5$--$2.1$~s on a workstation-class NVIDIA RTX~4090; both regimes are well within any IoT FL deployment budget. Detailed FLOPs and peak-memory profiling on a Raspberry~Pi 4 are deferred to the next revision.
 
 \subsection{Future Work}
 
@@ -28,4 +28,4 @@ Three concrete extensions present themselves. First, combining FedKAN with grid 
 
 \subsection{Reproducibility}
 
-All code, dataset preparation scripts, configuration files, per-run metrics for the 146 runs reported in Section~\ref{sec:experiments}, the auto-generated tables and figures of this manuscript, and the LaTeX source of the manuscript itself are released at \url{https://github.com/haodpsut/FedKAN-IDS-v2}. The repository's notebook \texttt{notebooks/10\_run\_batch.ipynb} reproduces the full M2 + M3a grid on a Google Colab Pro+ A100 runtime in approximately $3.5$~hours.
+All code, dataset preparation scripts, configuration files, per-run metrics for the $289$ reproducible runs reported in Section~\ref{sec:experiments}, the auto-generated tables and figures of this manuscript, and the \LaTeX{} source of the manuscript itself are released at \url{https://github.com/haodpsut/FedKAN-IDS-v2}. Two execution paths are documented in the repository: \texttt{notebooks/10\_run\_batch.ipynb} reproduces the NF-BoT-IoT-v2 grid on a Google Colab Pro+ A100 runtime in approximately $3.5$~hours, and \texttt{scripts/run\_grid.sh} reproduces any of the three datasets on a workstation-class NVIDIA RTX~4090 (used for the NF-ToN-IoT-v2 and NF-CSE-CIC-IDS2018-v2 batches), with a one-line \texttt{conda} environment specified in \texttt{docs/SERVER\_SETUP.md}. A single command, \texttt{bash scripts/rebuild\_paper\_artifacts.sh}, regenerates every table, figure, and the compiled PDF from the committed run directories.

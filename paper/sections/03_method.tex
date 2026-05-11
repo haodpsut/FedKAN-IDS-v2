@@ -203,7 +203,7 @@ The server runs a synchronous Federated Averaging loop adapted to the three KAN 
 
 Each client runs $E$ local epochs of mini-batch SGD or Adam on its private $\mathcal{D}_k$ before returning the updated parameter triple to the server. Backpropagation through a KAN layer is straightforward: $\partial \phi_{q,p}/\partial w^{(b)}_{q,p} = \sigma(x_p)$, $\partial \phi_{q,p}/\partial w^{(s)}_{q,p} = \sum_i c_{q,p,i} B_i(x_p)$, and $\partial \phi_{q,p}/\partial c_{q,p,i} = w^{(s)}_{q,p} B_i(x_p)$, all of which are computed automatically by modern autodiff frameworks.
 
-In our implementation we use the open-source \texttt{efficient\_kan} library, which fuses the spline-coefficient lookup into a single contiguous matrix multiplication and reduces the constant factor in the per-edge forward cost relative to a naive double-summation implementation. The full pipeline (data partitioning, FedAvg server, KAN client) is released as the open-source repository accompanying this work; configurations and run-level metrics for all 146 experimental runs reported in Section~\ref{sec:experiments} are committed to that repository.
+In our implementation we use the open-source \texttt{efficient\_kan} library, which fuses the spline-coefficient lookup into a single contiguous matrix multiplication and reduces the constant factor in the per-edge forward cost relative to a naive double-summation implementation. The full pipeline (data partitioning, FedAvg server, KAN client) is released as the open-source repository accompanying this work; configurations and run-level metrics for all $289$ experimental runs reported in Section~\ref{sec:experiments} are committed to that repository.
 
 \subsection{Computational and Communication Footprint}\label{subsec:cost}
 
