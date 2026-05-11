@@ -216,8 +216,8 @@ def main():
         # LaTeX row.
         sig = ""
         p = rep.get("paired_p", rep["welch_p"])
-        if p < 1e-3: sig = r"$^{***}$"
-        elif p < 1e-2: sig = r"$^{**}$"
+        if p < 0.001: sig = r"$^{***}$"
+        elif p < 0.01: sig = r"$^{**}$"
         elif p < 0.05: sig = r"$^{*}$"
         ci_str = "--"
         if rep["paired"]:
@@ -273,7 +273,7 @@ def main():
         r"\begin{table*}[t]",
         r"\centering",
         r"\caption{Statistical comparison on " + ds_pretty +
-        r": \textbf{FedKAN-IDS (Ours)} vs FedAvg-MLP-PM (parameter-matched). Accuracy in \%; $\Delta$ is the seed-paired mean difference (KAN $-$ MLP), CI is the percentile-bootstrap 95\% CI of $\Delta$, $d$ is Cohen's effect size, $p$ is the paired-$t$ test. $^{*}p{<}0.05$, $^{**}p{<}10^{-2}$, $^{***}p{<}10^{-3}$.}",
+        r": \textbf{FedKAN-IDS (Ours)} vs FedAvg-MLP-PM (parameter-matched). Accuracy in \%; $\Delta$ is the seed-paired mean difference (KAN $-$ MLP), CI is the percentile-bootstrap 95\% CI of $\Delta$, $d$ is Cohen's effect size, $p$ is the paired-$t$ test. Significance markers follow the standard convention $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.}",
         r"\label{tab:stats_" + dataset_tag + "}",
         r"\renewcommand{\arraystretch}{1.15}",
         r"\setlength{\tabcolsep}{4pt}",
