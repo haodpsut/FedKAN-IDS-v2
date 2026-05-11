@@ -2,8 +2,8 @@ name: nf_cseciic_v2
 display_name: NF-CSE-CIC-IDS2018-v2
 source:
   primary: kaggle
-  kaggle_slug: dhoogla/nfcseciciids2018v2
-  expected_csv: NF-CSE-CIC-IDS2018-v2.csv
+  kaggle_slug: dhoogla/nfcsecicids2018v2
+  expected_csv: NF-CSE-CIC-IDS2018-V2.parquet
 preprocess:
   drop_columns: [IPV4_SRC_ADDR, IPV4_DST_ADDR, L4_SRC_PORT, L4_DST_PORT]
   binary_label_column: Label
