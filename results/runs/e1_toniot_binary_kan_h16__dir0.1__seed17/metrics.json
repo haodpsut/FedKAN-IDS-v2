@@ -1,0 +1,36 @@
+{
+  "run_id": "e1_toniot_binary_kan_h16__dir0.1__seed17",
+  "seed": 17,
+  "device": "cuda",
+  "model_name": "kan",
+  "model_hidden": [
+    16
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "n_params": 6560,
+  "bytes_per_round_uplink": 28880,
+  "total_uplink_bytes": 14440000,
+  "final_metrics": {
+    "accuracy": 0.52425,
+    "f1_macro": 0.394367164463534,
+    "f1_weighted": 0.3943671644635339,
+    "per_class_precision": [
+      0.8285565398645127,
+      0.5125896048401589
+    ],
+    "per_class_recall": [
+      0.061153846153846156,
+      0.9873461538461539
+    ],
+    "per_class_f1": [
+      0.1139009276836563,
+      0.6748334012434116
+    ]
+  },
+  "best_accuracy": 0.7732307692307693,
+  "rounds": 50
+}
