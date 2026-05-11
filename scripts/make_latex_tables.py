@@ -104,7 +104,9 @@ def headline_table(metric: str = "accuracy") -> str:
     lines.append(r"\caption{Final-round accuracy (\%) on NF-BoT-IoT-v2 under three data-heterogeneity regimes. Mean $\pm$ std over $n$ seeds. \textbf{Bold} = best mean per column. KAN-8 and MLP-PM-80 are matched in parameter count ($\sim$3.3k).}")
     lines.append(r"\label{tab:headline_botiot}")
     lines.append(r"\renewcommand{\arraystretch}{1.15}")
-    lines.append(r"\begin{tabular}{l c c " + " ".join(["c"] * len(PARTITION_ORDER) * len(modes)) + "}")
+    lines.append(r"\setlength{\tabcolsep}{4pt}")
+    lines.append(r"\resizebox{\textwidth}{!}{%")
+    lines.append(r"\begin{tabular}{@{}l c c " + " ".join(["c"] * len(PARTITION_ORDER) * len(modes)) + r"@{}}")
     lines.append(r"\toprule")
     head1 = ["Method", "Params", "Comm. (MB)"]
     for mode in modes:
@@ -155,7 +157,8 @@ def headline_table(metric: str = "accuracy") -> str:
                     row.append(fmt_pct(cell["mean"], cell["std"], bold=bold))
         lines.append(" & ".join(row) + r" \\")
     lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular}")
+    lines.append(r"\end{tabular}%")
+    lines.append(r"}")
     lines.append(r"\end{table*}")
     return "\n".join(lines) + "\n"
 

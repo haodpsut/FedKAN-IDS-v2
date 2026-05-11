@@ -4,7 +4,9 @@
 \caption{Final-round accuracy (\%) on NF-BoT-IoT-v2 under three data-heterogeneity regimes. Mean $\pm$ std over $n$ seeds. \textbf{Bold} = best mean per column. KAN-8 and MLP-PM-80 are matched in parameter count ($\sim$3.3k).}
 \label{tab:headline_botiot}
 \renewcommand{\arraystretch}{1.15}
-\begin{tabular}{l c c c c c c c c}
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}l c c c c c c c c@{}}
 \toprule
 Method & Params & Comm. (MB) & \multicolumn{3}{c}{Binary} & \multicolumn{3}{c}{Multiclass} \\
 \cmidrule(lr){4-6} \cmidrule(lr){7-9}
@@ -15,5 +17,6 @@ FedAvg-MLP-PM (80h) & 3,362 & 6.64 & \textbf{99.74\,{\scriptsize$\pm$0.00}} & \t
 \textbf{FedKAN (Ours, 8h)} & 3,280 & 7.56 & 97.52\,{\scriptsize$\pm$0.06} & 99.66\,{\scriptsize$\pm$0.06} & 94.71\,{\scriptsize$\pm$5.84} & 93.25\,{\scriptsize$\pm$0.08} & 93.33\,{\scriptsize$\pm$0.16} & 86.01\,{\scriptsize$\pm$6.38} \\
 F-KAN (16h) & 6,560 & 14.23 & 97.56\,{\scriptsize$\pm$0.02} & 99.69\,{\scriptsize$\pm$0.02} & \textbf{95.85\,{\scriptsize$\pm$5.82}} & 93.53\,{\scriptsize$\pm$0.20} & \textbf{93.37\,{\scriptsize$\pm$0.23}} & \textbf{87.05\,{\scriptsize$\pm$6.96}} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table*}
