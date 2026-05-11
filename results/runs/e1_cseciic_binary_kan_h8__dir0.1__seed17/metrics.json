@@ -1,0 +1,36 @@
+{
+  "run_id": "e1_cseciic_binary_kan_h8__dir0.1__seed17",
+  "seed": 17,
+  "device": "cuda",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "n_params": 3280,
+  "bytes_per_round_uplink": 15376,
+  "total_uplink_bytes": 7688000,
+  "final_metrics": {
+    "accuracy": 0.6795769230769231,
+    "f1_macro": 0.6492082707467074,
+    "f1_weighted": 0.6492082707467075,
+    "per_class_precision": [
+      0.9363551401869159,
+      0.6130508474576272
+    ],
+    "per_class_recall": [
+      0.38534615384615384,
+      0.9738076923076923
+    ],
+    "per_class_f1": [
+      0.5459945504087194,
+      0.7524219910846954
+    ]
+  },
+  "best_accuracy": 0.9148076923076923,
+  "rounds": 50
+}
