@@ -239,6 +239,16 @@ def main():
         for m, p in skipped:
             txt_lines.append(f"  {m}/{p}")
 
+    if not tex_rows:
+        # No cells passed MIN_SEEDS — emit nothing rather than an empty table
+        # that would render as a single-line ugly artefact in the paper.
+        # Remove any stale prior table.
+        if out_tex.exists():
+            out_tex.unlink()
+        print(f"\n(no cells passed MIN_SEEDS={MIN_SEEDS}; not writing {out_tex})")
+        out_txt.write_text("\n".join(txt_lines), encoding="utf-8")
+        return
+
     out_txt.write_text("\n".join(txt_lines), encoding="utf-8")
     print("\n".join(txt_lines))
     print(f"\nWrote {out_txt}")

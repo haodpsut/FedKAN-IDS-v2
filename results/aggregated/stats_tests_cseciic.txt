@@ -1,0 +1,6 @@
+Pairwise stats: kan_h8 (Ours) vs mlp_h80 (toughest baseline) on e1_cseciic
+  MIN_SEEDS=5, N_BOOT=5000
+
+Skipped (insufficient seeds):
+  binary/dir0.1
+  multiclass/dir0.1
