@@ -43,7 +43,13 @@ def variant_of(metrics: dict) -> str | None:
     h = metrics.get("model_hidden")
     if not name or not h:
         return None
-    return f"{name}_h{'x'.join(str(x) for x in h)}"
+    base = f"{name}_h{'x'.join(str(x) for x in h)}"
+    # KAN runs with non-default grid_size are tagged distinctly so a
+    # G=10 ablation does not pollute the main G=5 cell.
+    g = metrics.get("model_grid_size")
+    if name == "kan" and g is not None and g != 5:
+        base += f"_g{g}"
+    return base
 
 
 def dataset_of(run_dir_name: str) -> str | None:

@@ -1,6 +1,16 @@
 Pairwise stats: kan_h8 (Ours) vs mlp_h80 (toughest baseline) on e1_cseciic
   MIN_SEEDS=5, N_BOOT=5000
 
-Skipped (insufficient seeds):
-  binary/dir0.1
-  multiclass/dir0.1
+=== binary/dir0.1  (n_A=10, n_B=10)  paired=True
+  KAN-8 (Ours): mean=93.77%  std=9.12  worst=67.96%
+  MLP-PM (B):  mean=94.14%  std=2.78  worst=89.18%
+  Welch t = -0.125, p = 0.903, Cohen d = -0.056
+  Paired t = -0.156, p = 0.879 (n_paired=10)
+  Mean diff (A-B) = -0.38pp, 95% CI = [-5.57, +2.93]
+
+=== multiclass/dir0.1  (n_A=10, n_B=10)  paired=True
+  KAN-8 (Ours): mean=85.85%  std=3.37  worst=79.69%
+  MLP-PM (B):  mean=84.12%  std=3.89  worst=75.73%
+  Welch t = +1.066, p = 0.301, Cohen d = +0.477
+  Paired t = +3.131, p = 0.012 (n_paired=10)
+  Mean diff (A-B) = +1.73pp, 95% CI = [+0.73, +2.74]

@@ -36,7 +36,11 @@ def variant_of(m: dict) -> str | None:
     h = m.get("model_hidden")
     if not name or not h:
         return None
-    return f"{name}_h{'x'.join(str(x) for x in h)}"
+    base = f"{name}_h{'x'.join(str(x) for x in h)}"
+    g = m.get("model_grid_size")
+    if name == "kan" and g is not None and g != 5:
+        base += f"_g{g}"
+    return base
 
 
 def ptag_of(m: dict) -> str:
