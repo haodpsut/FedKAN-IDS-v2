@@ -1,4 +1,4 @@
-Pairwise stats: kan_h8 (Ours) vs mlp_h80 (toughest baseline)
+Pairwise stats: kan_h8 (Ours) vs mlp_h80 (toughest baseline) on e1_botiot
   MIN_SEEDS=5, N_BOOT=5000
 
 === binary/dir0.1  (n_A=10, n_B=10)  paired=True

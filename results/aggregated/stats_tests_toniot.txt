@@ -1,0 +1,16 @@
+Pairwise stats: kan_h8 (Ours) vs mlp_h80 (toughest baseline) on e1_toniot
+  MIN_SEEDS=5, N_BOOT=5000
+
+=== binary/dir0.1  (n_A=10, n_B=10)  paired=True
+  KAN-8 (Ours): mean=85.30%  std=13.32  worst=51.74%
+  MLP-PM (B):  mean=80.22%  std=8.99  worst=62.81%
+  Welch t = +1.000, p = 0.333, Cohen d = +0.447
+  Paired t = +1.810, p = 0.104 (n_paired=10)
+  Mean diff (A-B) = +5.08pp, 95% CI = [-0.29, +9.93]
+
+=== multiclass/dir0.1  (n_A=10, n_B=10)  paired=True
+  KAN-8 (Ours): mean=74.16%  std=4.42  worst=67.33%
+  MLP-PM (B):  mean=74.76%  std=5.01  worst=67.90%
+  Welch t = -0.282, p = 0.781, Cohen d = -0.126
+  Paired t = -0.300, p = 0.771 (n_paired=10)
+  Mean diff (A-B) = -0.60pp, 95% CI = [-4.49, +2.91]
