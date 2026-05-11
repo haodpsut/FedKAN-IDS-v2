@@ -1,0 +1,90 @@
+% Cover letter for FedKAN-IDS submission to IEEE Internet of Things Journal.
+% Compile: pdflatex cover_letter.tex
+\documentclass[11pt,a4paper]{letter}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{microtype}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+
+\signature{%
+    Truong Duy Dinh, on behalf of all co-authors\\[2pt]
+    Faculty of Information Security\\
+    Posts and Telecommunications Institute of Technology (PTIT)\\
+    Ha Noi, Vietnam\\
+    Email: \href{mailto:duydt@ptit.edu.vn}{duydt@ptit.edu.vn}%
+}
+
+\address{%
+    Truong Duy Dinh (corresponding author)\\
+    Faculty of Information Security\\
+    Posts and Telecommunications Institute of Technology\\
+    Ha Noi, Vietnam\\
+    Email: \href{mailto:duydt@ptit.edu.vn}{duydt@ptit.edu.vn}%
+}
+
+\begin{document}
+\begin{letter}{%
+    Editor-in-Chief\\
+    \emph{IEEE Internet of Things Journal}%
+}
+
+\opening{Dear Editor-in-Chief,}
+
+We are pleased to submit our manuscript titled \textit{``FedKAN-IDS: Heterogeneity-Robust Federated Kolmogorov--Arnold Networks for NetFlow-Based IoT Intrusion Detection''} for consideration as a Regular Article in the \emph{IEEE Internet of Things Journal}.
+
+\subsection*{Brief summary of the work}
+
+The deployment of federated learning (FL) for intrusion detection on IoT gateways faces two coupled bottlenecks: bandwidth constraints at the edge, and accuracy degradation when client traffic distributions are heterogeneously skewed. Kolmogorov--Arnold Networks (KANs) have recently been proposed as a parameter-efficient alternative to MLPs, and a growing body of work (F-KANs, Sasse \& de Farias, Fed-KAN, CG-FKAN, etc.) has integrated KANs into FL outside the IDS setting. Our submission is the first \emph{systematic, parameter-matched} empirical study of Federated KANs on the standardised NetFlow-v2 family of IDS datasets (NF-BoT-IoT-v2, NF-ToN-IoT-v2, NF-CSE-CIC-IDS2018-v2), evaluated with $n = 10$ seeds across three data-heterogeneity regimes and both binary and multi-class detection.
+
+\subsection*{Why we believe this manuscript fits IoT-J}
+
+\begin{enumerate}
+    \item \textbf{Direct relevance to the journal's scope.} The work addresses federated intrusion detection on bandwidth-constrained IoT gateways, anchored in the IEEE/Sarhan NetFlow-v2 dataset family that has emerged as the standard benchmark for IoT IDS research published in IoT-J and its sister journals.
+
+    \item \textbf{Empirical rigor with explicit reviewer-resistant scoping.} We do not claim universal superiority for FedKAN. Instead we identify two complementary advantage patterns --- one for binary detection that tracks class-distribution skew, and one for multi-class detection that scales oppositely with the number of attack classes --- and back the multi-class advantage on NF-CSE-CIC-IDS2018-v2 with a seed-paired $t$-test at $p = 0.012$ and a bootstrap $95\%$ confidence interval $[+0.73, +2.74]$ percentage points that excludes zero.
+
+    \item \textbf{Theoretical anchor for the empirical observations.} A convergence analysis (Theorem~1 in the manuscript) shows that the KAN B-spline approximation introduces an additive $\mathcal{O}(G^{-(k+1)})$ bias term that is \emph{independent} of the data-heterogeneity factor $\Gamma_\alpha$; this is the prediction that, in turn, explains why the magnitude of the empirical advantage tracks the class-distribution skew across the three datasets.
+
+    \item \textbf{Transparent reporting of limitations.} We identify a reproducible failure mode --- seed~17's Dirichlet partition drives FedKAN-8 below the parameter-matched MLP on two of three datasets --- and confirm two architectural mitigations (a larger hidden width recovers the gap on NF-CSE-CIC-IDS2018-v2; a richer spline grid $G=10$ recovers $\sim 5$ percentage points on NF-ToN-IoT-v2). This honest scoping, we believe, is more useful to the deploying community than a universal-superiority claim that the data would not support.
+
+    \item \textbf{Full reproducibility.} All code, dataset preparation scripts, configurations, per-run metrics for $289$ runs, the auto-generated tables and figures, and the \LaTeX{} source of the manuscript are released at \url{https://github.com/haodpsut/FedKAN-IDS-v2}. A single command, \texttt{bash scripts/rebuild\_paper\_artifacts.sh}, regenerates every artefact from the committed run directories.
+\end{enumerate}
+
+\subsection*{Author confirmations}
+
+We confirm that:
+\begin{itemize}
+    \item This manuscript is original work and is not currently under consideration for publication elsewhere, and no part of it has been previously published.
+    \item All four listed authors have read and approved the submitted version, and have agreed to the order of authorship.
+    \item There are no conflicts of interest, financial or otherwise, to declare.
+    \item The work uses only publicly available NetFlow-v2 datasets (under their original CC-BY-NC-SA-4.0 license, as redistributed via Kaggle by the Dhoogla mirror) and does not involve any human-subjects data.
+    \item The corresponding author Truong Duy Dinh (\href{mailto:duydt@ptit.edu.vn}{duydt@ptit.edu.vn}) will handle all correspondence regarding this submission.
+\end{itemize}
+
+\subsection*{Relation to a prior CITA 2026 submission}
+
+We acknowledge that an earlier short version of this work, focused only on NF-BoT-IoT-v2 with a single MLP baseline, was previously submitted to a national-tier conference (CITA 2026) and was not accepted. The current submission is a substantially expanded follow-up: it adds two new datasets (NF-ToN-IoT-v2 and NF-CSE-CIC-IDS2018-v2), three additional baseline architectures including a parameter-matched MLP (which the conference reviewers correctly identified as missing from the original work), full statistical analysis with bootstrap confidence intervals across $n = 10$ seeds per dataset, a convergence theorem with a spline-bias term, and an honest identification of failure modes. We mention this here for transparency and are happy to share the conference reviewer comments if helpful to the editorial process.
+
+\subsection*{Suggested reviewers}
+
+We respectfully suggest the following potential reviewers whose published work overlaps with our submission. We have no personal or collaborative relationship with any of them.
+
+\begin{itemize}
+    \item Prof. Marius Portmann, University of Queensland --- co-author of the NetFlow-v2 standardised IDS dataset family.
+    \item Dr. Engin Zeydan, Centre Tecnol\`ogic de Telecomunicacions de Catalunya (CTTC) --- lead author of F-KANs and Fed-KAN.
+    \item Dr. Mohamed Amine Ferrag, Technology Innovation Institute (Abu Dhabi) --- author of FELIDS and federated IDS for agricultural IoT.
+    \item Dr. Mario Bochicchio, University of Bari --- co-author of Federated KAN for Health Data Analysis.
+    \item Prof. Othmane Friha, Mohamed Khider University of Biskra --- author of FELIDS.
+\end{itemize}
+
+\subsection*{Closing}
+
+We thank the editor and the reviewers in advance for their time and consideration. We look forward to their feedback and to the opportunity to revise the manuscript as the review process may direct.
+
+\closing{Yours sincerely,}
+
+\end{letter}
+\end{document}
