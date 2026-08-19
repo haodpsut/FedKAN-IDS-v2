@@ -1,0 +1,37 @@
+{
+  "run_id": "g10_botiot__dir0.1__seed11",
+  "seed": 11,
+  "device": "cpu",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 10,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "fedavg",
+  "n_params": 4920,
+  "bytes_per_round_uplink": 22876,
+  "total_uplink_bytes": 11438000,
+  "final_metrics": {
+    "accuracy": 0.9265133848555515,
+    "f1_macro": 0.9261107963126998,
+    "f1_weighted": 0.9261226742514315,
+    "per_class_precision": [
+      0.9978349120433018,
+      0.8733048423461318
+    ],
+    "per_class_recall": [
+      0.8545602039633793,
+      0.9981538461538462
+    ],
+    "per_class_f1": [
+      0.920656720144828,
+      0.9315648724805714
+    ]
+  },
+  "best_accuracy": 0.9967429221192207,
+  "rounds": 50
+}

@@ -1,0 +1,37 @@
+{
+  "run_id": "g10_toniot__dir0.1__seed11",
+  "seed": 11,
+  "device": "cpu",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 10,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "fedavg",
+  "n_params": 4920,
+  "bytes_per_round_uplink": 22876,
+  "total_uplink_bytes": 11438000,
+  "final_metrics": {
+    "accuracy": 0.9107692307692308,
+    "f1_macro": 0.9107547665724562,
+    "f1_weighted": 0.9107547665724562,
+    "per_class_precision": [
+      0.9215013023916647,
+      0.9005700997674593
+    ],
+    "per_class_recall": [
+      0.8980384615384616,
+      0.9235
+    ],
+    "per_class_f1": [
+      0.9096186061007441,
+      0.9118909270441685
+    ]
+  },
+  "best_accuracy": 0.9107692307692308,
+  "rounds": 50
+}
