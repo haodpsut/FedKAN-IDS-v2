@@ -1,0 +1,37 @@
+{
+  "run_id": "algo_fedpaq_mlp80__dir0.1__seed11",
+  "seed": 11,
+  "device": "cpu",
+  "model_name": "mlp",
+  "model_hidden": [
+    80
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "fedpaq",
+  "n_params": 3362,
+  "bytes_per_round_uplink": 13448,
+  "total_uplink_bytes": 1457296,
+  "final_metrics": {
+    "accuracy": 0.5355869485612966,
+    "f1_macro": 0.40642569232965065,
+    "f1_weighted": 0.40702870100400923,
+    "per_class_precision": [
+      0.9983296213808464,
+      0.5189954283204568
+    ],
+    "per_class_recall": [
+      0.06926256422142388,
+      0.9998846153846154
+    ],
+    "per_class_f1": [
+      0.12953798360004334,
+      0.683313401059258
+    ]
+  },
+  "best_accuracy": 0.5477672634764006,
+  "rounds": 50
+}

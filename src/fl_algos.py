@@ -64,14 +64,26 @@ def _penultimate(model: nn.Module, x: torch.Tensor) -> torch.Tensor:
     bien ve FedAvg cong mot so hang gan nhu hang so: truong hop do PHAI bao ra
     chu khong duoc im lang, vi mot MOON suy bien trong y het MOON vo dung.
     """
+    # Ba cau truc gap o day, moi cau truc mot cach lay bieu dien. Van GIU nguyen
+    # tac: khong bao gio lang le tra ve logits, vi mot MOON suy bien trong y het
+    # mot MOON vo dung. Ca nay da bat that: MLP la nn.Sequential tran nen nhanh
+    # .layers/.net khong khop va 10 run da dung lai thay vi chay sai.
+    if isinstance(model, nn.Sequential):
+        # Sequential(Linear, ReLU, Linear): bieu dien la dau ra TRUOC lop cuoi,
+        # tuc chay het moi module tru module cuoi (da gom ca ham kich hoat).
+        h = x
+        for m in list(model)[:-1]:
+            h = m(h)
+        return h
+
     layers = getattr(model, "layers", None) or getattr(model, "net", None)
     if layers is None:
         raise RuntimeError(
-            "MOON: khong tim thay .layers/.net de lay bieu dien. Khong duoc lang le "
-            "tra ve logits, vi mot MOON suy bien trong y het mot MOON vo dung.")
+            "MOON: khong tim thay cach lay bieu dien cho %s. Khong duoc lang le "
+            "tra ve logits." % type(model).__name__)
     mods = [m for m in layers if isinstance(m, nn.Module)]
     h = x
-    # Lap dung nhu forward: moi lop an deu qua tanh, lop cuoi thi bo qua.
+    # Lap dung nhu forward cua KANClassifier: moi lop an qua tanh, lop cuoi bo qua.
     for m in mods[:-1]:
         h = torch.tanh(m(h))
     return h

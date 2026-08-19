@@ -1,0 +1,37 @@
+{
+  "run_id": "algo_fedpaq_kan8__dir0.1__seed2024",
+  "seed": 2024,
+  "device": "cpu",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "fedpaq",
+  "n_params": 3280,
+  "bytes_per_round_uplink": 15376,
+  "total_uplink_bytes": 1536128,
+  "final_metrics": {
+    "accuracy": 0.5082968759034054,
+    "f1_macro": 0.34970200222290987,
+    "f1_weighted": 0.35040139422751077,
+    "per_class_precision": [
+      0.9973404255319149,
+      0.504727145658209
+    ],
+    "per_class_recall": [
+      0.01448603546181481,
+      0.9999615384615385
+    ],
+    "per_class_f1": [
+      0.028557285915546588,
+      0.6708467185302731
+    ]
+  },
+  "best_accuracy": 0.5166419334322663,
+  "rounds": 50
+}

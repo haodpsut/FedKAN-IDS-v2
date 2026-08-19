@@ -1,0 +1,37 @@
+{
+  "run_id": "algo_moon_mlp80__dir0.1__seed23",
+  "seed": 23,
+  "device": "cpu",
+  "model_name": "mlp",
+  "model_hidden": [
+    80
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "moon",
+  "n_params": 3362,
+  "bytes_per_round_uplink": 13448,
+  "total_uplink_bytes": 6724000,
+  "final_metrics": {
+    "accuracy": 0.8450478925357026,
+    "f1_macro": 0.8413065143397203,
+    "f1_weighted": 0.8413595802034263,
+    "per_class_precision": [
+      0.9948427882215938,
+      0.7652566904944763
+    ],
+    "per_class_recall": [
+      0.6930119364932206,
+      0.996423076923077
+    ],
+    "per_class_f1": [
+      0.8169398907103825,
+      0.8656731379690581
+    ]
+  },
+  "best_accuracy": 0.9952589280551969,
+  "rounds": 50
+}

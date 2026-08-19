@@ -1,0 +1,37 @@
+{
+  "run_id": "algo_scaffold_mlp80__dir0.1__seed23",
+  "seed": 23,
+  "device": "cpu",
+  "model_name": "mlp",
+  "model_hidden": [
+    80
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "scaffold",
+  "n_params": 3362,
+  "bytes_per_round_uplink": 13448,
+  "total_uplink_bytes": 13448000,
+  "final_metrics": {
+    "accuracy": 0.906624009867597,
+    "f1_macro": 0.9065895909801767,
+    "f1_weighted": 0.9065856860260817,
+    "per_class_precision": [
+      0.8897244036153504,
+      0.9249527941826363
+    ],
+    "per_class_recall": [
+      0.9278402286862132,
+      0.8855
+    ],
+    "per_class_f1": [
+      0.9083826560520394,
+      0.9047965259083138
+    ]
+  },
+  "best_accuracy": 0.9274191994141114,
+  "rounds": 50
+}

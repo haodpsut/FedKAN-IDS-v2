@@ -1,0 +1,37 @@
+{
+  "run_id": "algo_scaffold_kan8__dir0.1__seed2026",
+  "seed": 2026,
+  "device": "cpu",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "scaffold",
+  "n_params": 3280,
+  "bytes_per_round_uplink": 15376,
+  "total_uplink_bytes": 15376000,
+  "final_metrics": {
+    "accuracy": 0.5010889047352901,
+    "f1_macro": 0.3338169399257899,
+    "f1_weighted": 0.3345439296190004,
+    "per_class_precision": [
+      0.0,
+      0.5010889047352901
+    ],
+    "per_class_recall": [
+      0.0,
+      1.0
+    ],
+    "per_class_f1": [
+      0.0,
+      0.6676338798515798
+    ]
+  },
+  "best_accuracy": 0.6496810376394858,
+  "rounds": 50
+}

@@ -1,0 +1,37 @@
+{
+  "run_id": "algo_moon_kan8__dir0.1__seed37",
+  "seed": 37,
+  "device": "cpu",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "moon",
+  "n_params": 3280,
+  "bytes_per_round_uplink": 15376,
+  "total_uplink_bytes": 7688000,
+  "final_metrics": {
+    "accuracy": 0.9851986046601268,
+    "f1_macro": 0.9851972899142154,
+    "f1_weighted": 0.9851975937307553,
+    "per_class_precision": [
+      0.992317039708361,
+      0.978313618441007
+    ],
+    "per_class_recall": [
+      0.9779039672422452,
+      0.9924615384615385
+    ],
+    "per_class_f1": [
+      0.9850577843495856,
+      0.9853367954788452
+    ]
+  },
+  "best_accuracy": 0.9851986046601268,
+  "rounds": 50
+}
