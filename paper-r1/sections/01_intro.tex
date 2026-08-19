@@ -1,0 +1,48 @@
+\section{Introduction}\label{sec:intro}
+
+\IEEEPARstart{T}{he} pervasive deployment of Internet-of-Things (IoT) devices across smart cities, industrial control, healthcare, and autonomous transport has dramatically expanded the network attack surface. Distributed denial-of-service (DDoS) campaigns, botnets, reconnaissance scans, and other intrusions traverse the same edge gateways that carry legitimate IoT traffic, motivating the deployment of network intrusion detection systems (IDS) at the network edge \cite{nguyen2021fl-iot-survey}.
+
+\textbf{Federated learning for IoT IDS.} Centralised IDS pipelines \cite{10471929}, in which raw flow records are exfiltrated to a central server for model training, raise persistent privacy concerns and conflict with regulations such as GDPR and HIPAA. Federated Learning (FL) \cite{mcmahan2017fedavg, 10468591} offers a privacy-preserving alternative: each IoT gateway trains a local model on its own traffic and only the model updates are aggregated. A growing literature applies FL to IoT IDS, with notable contributions including DeepFed \cite{li2020deepfed}, which combined CNNs with gated recurrent units, and a wave of subsequent work on heterogeneity-robust aggregation, communication compression \cite{sattler2019sparse,reisizadeh2020fedpaq,aji2017topk}, and security-aware client selection.
+
+\textbf{The communication--robustness tension.} Two pressures shape FL-IDS design at the edge. First, IoT links are bandwidth-constrained: a typical LoRaWAN device has a duty-cycled uplink budget on the order of kilobytes per hour. Second, client data is highly non-identical. The geographically distributed nature of IoT deployments means that one gateway may see almost only DDoS traffic while another sees primarily reconnaissance scans, a scenario commonly modelled by a Dirichlet partition with a small concentration parameter $\alpha$ \cite{hsu2019measuring}. Under such partitioning, vanilla FedAvg-MLP architectures are known to suffer slow convergence and, more pathologically, occasional catastrophic divergence in which a single unfortunate client--initialisation pair drags the global model far from the consensus optimum.
+
+\textbf{Kolmogorov--Arnold Networks (KANs).} The recent introduction of KANs \cite{liu2024kan} replaces fixed neuron-wise activations with learnable edge-wise B-spline activations. Unlike a dense MLP weight matrix, where each scalar parameter modulates a global linear interaction, each spline coefficient in a KAN layer has \emph{local} support on the grid by construction of the B-spline basis. This locality has been argued to provide better interpretability and parameter efficiency in physics-discovery and scientific-computing settings. In the IoT security domain specifically, KAN variants have been benchmarked for botnet attack classification in the centralised setting~\cite{10839389}; the question this paper asks is whether that behaviour survives federation under client heterogeneity.
+
+\textbf{KAN-FL: a recently busy research line.} Within a year of \cite{liu2024kan}, several works have integrated KANs into federated learning. F-KANs \cite{zeydan2024fkans} ported the original KAN to a vanilla FedAvg framework on CIFAR-style benchmarks. \cite{sasse2024evaluating} performed the first systematic non-IID evaluation of FedKAN, reporting modest gains over MLPs at matched parameter budgets on tabular data. \cite{ma2025enhancing} extended the comparison across multiple aggregation strategies (FedProx, SCAFFOLD), and \cite{zeydan2025fedkan} applied a Fed-KAN to traffic prediction. \cite{lee2025unified} contributed a medical-imaging benchmark and \cite{zeleke2024federated} an ECG-signal study. Most recently, \cite{yu2025cgfkan} proposed CG-FKAN, which sparsifies the KAN grid coefficients to attack communication efficiency directly.
+
+\textbf{Positioning of this paper.} The methodological observation ``KAN-FL converges in fewer rounds and transmits fewer bytes than a parameter-heavy MLP'' has therefore been published several times outside the IDS setting. We do \emph{not} claim that observation as new. What is new in this paper is (i) a systematic empirical study of FedKAN \emph{specifically} on the standardised NetFlow-v2 family of IDS datasets~\cite{sarhan2022standard}, (ii) a parameter-matched comparison protocol that resolves the unfair-baseline ambiguity present in much prior FedKAN work, and (iii) a refined narrative anchored in a convergence analysis: FedKAN's advantage is not in mean accuracy but in worst-case robustness under extreme client heterogeneity, and this advantage cannot be replicated by simply scaling up an MLP baseline.
+
+\textbf{Headline finding.} The advantage attributed to federated KANs in the recent
+literature, and in the first version of this manuscript, is confounded with how much
+hyper-parameter tuning each architecture receives. On NF-BoT-IoT-v2 binary detection under
+Dirichlet $\alpha=0.1$, the parameter-matched MLP's best learning rate is $10^{-1}$, an order
+of magnitude away from the $10^{-2}$ shared by all architectures in the original comparison.
+Giving it that learning rate raises it by $5.39$~pp and collapses the KAN advantage from
+$+5.49$ to $+0.76$~pp ($p=0.74$, paired over ten seeds). The same sweep on three further
+cells puts the advantage between $-0.49$ and $+6.23$~pp with no consistent sign, so the
+effect is a property of the dataset, not of the architecture.
+
+\textbf{Theoretical anchoring.} We provide a convergence analysis (Theorem~\ref{thm:conv}) showing that the FedKAN error decomposes into a standard FedAvg term proportional to the data-heterogeneity factor $\Gamma_\alpha$ \emph{plus} an additive spline-approximation bias of order $\mathcal{O}(G^{-(k+1)})$. Crucially, the spline-bias term is independent of $\Gamma_\alpha$, behaving as an effective regulariser whose relative impact \emph{decreases} as heterogeneity grows. Empirically, this manifests as the smaller cross-seed variance we report.
+
+\textbf{Contributions.}
+\begin{itemize}
+\item \textbf{A negative result with a cause.} We show that the KAN-versus-MLP gap reported
+for federated intrusion detection is largely a tuning artefact, and we quantify it: on the
+cell that produced our own headline number, tuning the baseline removes $5.39$ of the
+$5.49$~pp gap. We also show the companion variance-reduction claim reverses sign on two of
+four cells.
+\item \textbf{A property that does generalise.} Across all three datasets, KAN is markedly
+less sensitive to the learning rate than the parameter-matched MLP, losing at most
+$0.65$/$1.58$/$2.53$~pp from a bad choice within a decade-wide band against
+$3.53$/$6.38$/$6.72$~pp, a factor of $2.7$ to $5.4$.
+\item \textbf{The price of that property.} On single-thread CPU at matched parameters, KAN
+inference costs $19.9\times$ more per sample and $37.9\times$ more per batch of $1000$, and
+KAN transmits more bytes to reach a fixed accuracy target. Parameter parity is not cost
+parity, and a paper that matches parameters has not thereby matched cost.
+\item \textbf{A comparison protocol and the runs behind it.} Per-architecture learning-rate
+tuning, accuracy summarised over the final five rounds rather than the last round alone, and
+an explicit test of how far each conclusion moves when the summary statistic changes. All
+$1{,}280$ runs, all configurations and the analysis scripts are released.
+\end{itemize}
+
+\textbf{Organisation.} Section~\ref{sec:prelim} introduces the KAN layer formalism and the federated IDS optimisation problem. Section~\ref{sec:method} details the FedKAN-IDS framework, including server and client algorithms. Section~\ref{sec:theory} presents the four formal results that anchor our empirical narrative. Section~\ref{sec:experiments} reports experimental protocol and results across architectures, partitions, and modes. Section~\ref{sec:conclusion} discusses threats to validity and outlines next steps.

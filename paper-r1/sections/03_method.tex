@@ -1,0 +1,210 @@
+\section{The FedKAN-IDS Framework}\label{sec:method}
+
+This section describes how Definitions~\ref{def:kan} and~\ref{def:fl-ids} are instantiated in the FedKAN-IDS pipeline. Section~\ref{subsec:arch} fixes the per-client model architecture and the global system flow (Fig.~\ref{fig:flow}); Section~\ref{subsec:server} formalises the server orchestration (Algorithm~\ref{alg:server}); Section~\ref{subsec:client} details the client local optimisation (Algorithm~\ref{alg:client}).
+
+\subsection{System Architecture}\label{subsec:arch}
+
+The FedKAN-IDS pipeline alternates between four stages per communication round, depicted in Fig.~\ref{fig:flow}: (1) the server initialises the global KAN with hyperparameters $(n_h, G, k)$; (2) broadcasts the current parameter triple $\Theta_t = \{w^{(b)}_t, w^{(s)}_t, c_t\}$ to the participating clients; (3) each client performs local optimisation against its private NetFlow records; and (4) the server aggregates returned parameters by data-weighted averaging.
+
+\begin{figure*}[!t]
+\centering
+\begin{tikzpicture}[
+    font=\small,
+    >=Stealth,
+    server/.style={draw, rounded corners=2pt, thick, fill=blue!7,
+                   minimum width=4.0cm, minimum height=1.3cm, align=center},
+    client/.style={draw, rounded corners=2pt, fill=orange!12,
+                   minimum width=2.1cm, minimum height=0.95cm, align=center},
+    stage/.style={circle, draw, thick, inner sep=0pt, minimum size=0.55cm,
+                  font=\bfseries\footnotesize},
+    stagelabel/.style={font=\bfseries\footnotesize, align=center},
+    bcast/.style={->, very thick, blue!70},
+    agg/.style  ={->, very thick, green!45!black, dashed},
+]
+% --- Aggregation server (centered top) ---
+\node[server] (srv) {%
+  \textbf{Aggregation Server}\\[1pt]
+  \footnotesize $\Theta_{t+1}=\displaystyle\sum_{k\in\mathcal{S}_t}\!\frac{N_k}{N_{\mathcal{S}_t}}\,\Theta^{k}_{t+1}$};
+
+% --- Stage 1 marker (top of server) ---
+\node[stage, above left=0.05cm and -0.6cm of srv.north] (s1) {1};
+\node[stagelabel, anchor=south west] at ($(s1.east)+(0.05,0)$)
+  {Init $(n_h, G, k)$};
+
+% --- Clients along bottom ---
+\node[client, below=2.1cm of srv, xshift=-4.5cm] (c1) {IoT Client 1\\\scriptsize $\mathcal{D}_1, \rho_1$};
+\node[client, below=2.1cm of srv, xshift=-1.7cm] (c2) {IoT Client 2\\\scriptsize $\mathcal{D}_2, \rho_2$};
+\node[client, below=2.1cm of srv, xshift= 1.1cm] (cd) {$\cdots$};
+\node[client, below=2.1cm of srv, xshift= 4.0cm, fill=red!10] (ck) {IoT Client $K$\\\scriptsize $\mathcal{D}_K, \rho_K$};
+
+% --- Broadcast arrows (downward) ---
+\foreach \c in {c1,c2,cd,ck} {
+    \draw[bcast] (srv.south) -- (\c.north);
+}
+
+% --- Aggregate arrows (upward, dashed, curved) ---
+\foreach \c in {c1,c2,cd,ck} {
+    \draw[agg] (\c.north) to[bend right=12] (srv.south);
+}
+
+% --- Stage 2 (broadcast) ---
+\node[stage, fill=blue!12, anchor=center]
+  at ($(srv.south west)+(-0.3,-0.6)$) (s2) {2};
+\node[stagelabel, anchor=east] at ($(s2.west)+(-0.05,0)$)
+  {Broadcast $\Theta_t$};
+
+% --- Stage 4 (aggregate) ---
+\node[stage, fill=green!18, anchor=center]
+  at ($(srv.south east)+(0.3,-0.6)$) (s4) {4};
+\node[stagelabel, anchor=west] at ($(s4.east)+(0.05,0)$)
+  {Aggregate $\{\Theta^{k}_{t+1}\}$};
+
+% --- Stage 3 marker (over the clients row) ---
+\node[stage, fill=orange!25] at ($(c1.south)+(0,-0.55)$) (s3a) {3};
+\node[stage, fill=orange!25] at ($(c2.south)+(0,-0.55)$) {3};
+\node[stage, fill=orange!25] at ($(ck.south)+(0,-0.55)$) (s3b) {3};
+\node[stagelabel, below=0.05cm of s3a, anchor=north]
+  {Local KAN training};
+
+% --- Heterogeneity hint below client row ---
+\node[font=\footnotesize, align=center,
+      below=1.45cm of c2, xshift=1.3cm]
+  {$\rho_k\sim\mathrm{Dirichlet}(\alpha)$:
+   small $\alpha\Rightarrow$ extreme non-IID};
+\end{tikzpicture}
+\caption{Main flow of FedKAN-IDS over one communication round. (1) The server initialises the global KAN with hyperparameters $(n_h, G, k)$; (2) broadcasts the current parameters $\Theta_t = \{w^{(b)}_t, w^{(s)}_t, c_t\}$; (3) each IoT client trains locally on its private $\mathcal{D}_k$ whose class proportions $\rho_k$ are drawn from a Dirichlet with concentration $\alpha$; (4) the server computes the data-weighted average of returned local parameters element-wise on each of $\{w^{(b)}, w^{(s)}, c\}$. The structure of one client's KAN layer (stage~3 detail) is shown in Fig.~\ref{fig:kan-arch}.}
+\label{fig:flow}
+\end{figure*}
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+    font=\small, >=Stealth,
+    inputnode/.style={circle, draw, fill=blue!10, minimum size=0.6cm,
+                      inner sep=0pt},
+    spline/.style   ={draw, rounded corners=1pt, fill=yellow!22, thick,
+                      minimum width=1.55cm, minimum height=0.65cm},
+    sumnode/.style  ={circle, draw, fill=green!15, minimum size=0.7cm,
+                      inner sep=0pt, thick},
+    outnode/.style  ={circle, draw, fill=violet!20, minimum size=0.7cm,
+                      inner sep=0pt, thick},
+]
+% --- Input nodes ---
+\node[inputnode] (x1) at (0,1.4)  {$x_1$};
+\node[inputnode] (x2) at (0,0.55) {$x_2$};
+\node[font=\bfseries] at (0,-0.1) {$\vdots$};
+\node[inputnode] (xd) at (0,-0.85) {$x_d$};
+
+% --- B-spline edge boxes ---
+\node[spline] (s1) at (2.1,1.4)  {$\phi_{1,q}(x_1)$};
+\node[spline] (s2) at (2.1,0.55) {$\phi_{2,q}(x_2)$};
+\node[font=\bfseries] at (2.1,-0.1) {$\vdots$};
+\node[spline] (sd) at (2.1,-0.85) {$\phi_{d,q}(x_d)$};
+
+% --- Edge connections (input -> spline) ---
+\foreach \i/\s in {x1/s1, x2/s2, xd/sd} {
+    \draw[->, thick] (\i) -- (\s);
+}
+
+% --- Sum node ---
+\node[sumnode] (sum) at (4.4,0.27) {$\sum$};
+
+% --- Spline -> sum ---
+\foreach \s in {s1,s2,sd} {
+    \draw[->, thick] (\s) -- (sum);
+}
+
+% --- Output (one hidden unit q) ---
+\node[outnode] (h) at (5.9,0.27) {$h_q$};
+\draw[->, thick] (sum) -- (h);
+
+% --- Layer labels ---
+\node[font=\footnotesize, anchor=south] at (0,1.95)
+  {\textbf{Input}};
+\node[font=\footnotesize, anchor=south] at (2.1,1.95)
+  {\textbf{Learnable B-spline edges}};
+\node[font=\footnotesize, anchor=south] at (5.15,1.95)
+  {\textbf{Hidden unit $q$}};
+
+% --- Equation below ---
+\node[font=\footnotesize, align=center, anchor=north]
+  at (3.0,-1.7)
+  {$\phi_{p,q}(x_p) \;=\;
+   w^{(b)}_{p,q}\,\sigma(x_p)
+   \;+\;
+   w^{(s)}_{p,q}\!\!\sum_{i=1}^{G+k} c_{p,q,i}\,B_i(x_p)$};
+\node[font=\scriptsize, align=center, anchor=north]
+  at (3.0,-2.4)
+  {SiLU residual base $\sigma$\;\,+\,\;order-$k$ B-spline expansion on $G$ grid points};
+\end{tikzpicture}
+\caption{Sub-flow: structure of one KAN layer producing hidden unit $h_q$ from input vector $\mathbf{x}\in\mathbb{R}^d$. Each edge $(p,q)$ carries an independent learnable activation $\phi_{p,q}$ parameterised as a SiLU residual base plus a B-spline expansion on a uniform grid of $G$ points (order $k$). The full client model stacks an input layer ($d \to n_h$) and an output layer ($n_h \to c$). The B-spline coefficients $c_{p,q,i}$ have local support, which is the key structural property exploited by Theorem~\ref{thm:conv}.}
+\label{fig:kan-arch}
+\end{figure}
+
+Each IoT client $C_k$ instantiates a single-hidden-layer KAN
+\begin{equation}
+f(\Theta;\mathbf{x}) \;=\; \Phi^{(\text{out})}\big(\Phi^{(\text{hid})}(\mathbf{x})\big),
+\end{equation}
+where $\Phi^{(\text{hid})}: \mathbb{R}^d \to \mathbb{R}^{n_h}$ and $\Phi^{(\text{out})}: \mathbb{R}^{n_h} \to \mathbb{R}^{c}$ are KAN layers (Definition~\ref{def:kan}) with shared grid size $G$ and order $k$. The model output is passed through a softmax to produce class probabilities; we train with cross-entropy loss. The client parameter set $\Theta = \{w^{(b)}, w^{(s)}, c\}$ comprises three structurally distinct sub-tensors which the server aggregates element-wise.
+
+For NetFlow-v2 IDS we fix $d = 39$ (the $43$ original features minus the four identifier columns dropped during preprocessing, see Section~\ref{sec:experiments}), and $c \in \{2, 5\}$ for binary and 5-class detection on NF-BoT-IoT-v2. Throughout, our default architecture is $n_h = 8$, $G = 5$, $k = 3$, giving $|\Theta| \approx 3{,}300$ parameters, well within the TinyML envelope of microcontroller-class IoT gateways.
+
+\subsection{Server Orchestration}\label{subsec:server}
+
+The server runs a synchronous Federated Averaging loop adapted to the three KAN parameter sets (Algorithm~\ref{alg:server}). Each round, a fraction $C \in (0, 1]$ of the $K$ clients is selected; in our experiments $C = 1$ (full participation), but the algorithm and analysis remain valid for $C < 1$. The aggregation step (line~\ref{alg-server:agg}) performs element-wise weighted averaging on each of $\{w^{(b)}, w^{(s)}, c\}$ in parallel. Because the B-spline coefficients $c$ enter the edge function~\eqref{eq:edge} linearly, FedAvg over $c$ is mathematically equivalent to averaging the underlying spline approximations under a fixed grid; this is the property exploited in Lemma~\ref{lem:spline} and Theorem~\ref{thm:conv}.
+
+\begin{algorithm}[t]
+\caption{FedKAN-IDS Server Orchestration}
+\label{alg:server}
+\begin{algorithmic}[1]
+\Require Number of clients $K$, sampling fraction $C$, rounds $T$, KAN hyperparameters $(n_h, G, k)$.
+\Ensure Trained global parameters $\Theta_T$.
+\State Initialise $\Theta_0 = \{w^{(b)}_0,\, w^{(s)}_0,\, c_0\}$
+\For{$t = 0, 1, \ldots, T-1$}
+    \State $m \leftarrow \max(\lceil C \cdot K \rceil,\, 1)$
+    \State $\mathcal{S}_t \leftarrow$ random subset of $m$ clients from $\{1,\ldots,K\}$
+    \For{each client $k \in \mathcal{S}_t$ \textbf{in parallel}}
+        \State $\Theta^{k}_{t+1} \leftarrow \Call{ClientUpdate}{k, \Theta_t}$
+    \EndFor
+    \State $\Theta_{t+1} \leftarrow \displaystyle\sum_{k \in \mathcal{S}_t}
+                  \frac{N_k}{\sum_{j \in \mathcal{S}_t} N_j}\,\Theta^{k}_{t+1}$
+                  \label{alg-server:agg}\Comment{element-wise on each of $w^{(b)}, w^{(s)}, c$}
+\EndFor
+\State \Return $\Theta_T$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Client Local Optimisation}\label{subsec:client}
+
+\begin{algorithm}[t]
+\caption{FedKAN-IDS \textsc{ClientUpdate}}
+\label{alg:client}
+\begin{algorithmic}[1]
+\Require Client index $k$, broadcasted parameters $\Theta_t$, local data $\mathcal{D}_k$, local epochs $E$, batch size $B$, learning rate $\eta$.
+\Ensure Updated local parameters $\Theta^{k}$.
+\State $\Theta^{k} \leftarrow \Theta_t$
+\State partition $\mathcal{D}_k$ into batches of size $B$
+\For{epoch $e = 1, \ldots, E$}
+    \For{minibatch $(\mathbf{x}, \mathbf{y}) \in \mathcal{D}_k$}
+        \State \textbf{Forward:} for each KAN edge $(q, p)$,
+        \[
+            \phi_{q,p}(x_p) = w^{(b)}_{q,p}\,\sigma(x_p) + w^{(s)}_{q,p} \sum_{i=1}^{G+k} c_{q,p,i}\, B_i(x_p)
+        \]
+        \State $\hat{\mathbf{y}} = f(\Theta^k; \mathbf{x})$ \Comment{stack the two KAN layers}
+        \State $\mathcal{L} = \mathrm{CrossEntropy}(\hat{\mathbf{y}}, \mathbf{y})$
+        \State \textbf{Backward:} compute $\nabla_{\Theta^k}\mathcal{L}$
+        \State \textbf{Update:} $\Theta^{k} \leftarrow \Theta^{k} - \eta\, \nabla_{\Theta^k}\mathcal{L}$
+        \Statex \quad \Comment{Adam in our experiments; SGD also valid}
+    \EndFor
+\EndFor
+\State \Return $\Theta^{k}$ to server
+\end{algorithmic}
+\end{algorithm}
+
+Each client runs $E$ local epochs of mini-batch SGD or Adam on its private $\mathcal{D}_k$ before returning the updated parameter triple to the server. Backpropagation through a KAN layer is straightforward: $\partial \phi_{q,p}/\partial w^{(b)}_{q,p} = \sigma(x_p)$, $\partial \phi_{q,p}/\partial w^{(s)}_{q,p} = \sum_i c_{q,p,i} B_i(x_p)$, and $\partial \phi_{q,p}/\partial c_{q,p,i} = w^{(s)}_{q,p} B_i(x_p)$, all of which are computed automatically by modern autodiff frameworks.
+
+In our implementation we use the open-source \texttt{efficient\_kan} library, which fuses the spline-coefficient lookup into a single contiguous matrix multiplication and reduces the constant factor in the per-edge forward cost relative to a naive double-summation implementation. The full pipeline (data partitioning, FedAvg server, KAN client) is released as the open-source repository accompanying this work; configurations and run-level metrics for all $1{,}460$ experimental runs reported in Section~\ref{sec:experiments} are committed to that repository.
+
+\subsection{Computational and Communication Footprint}\label{subsec:cost}
+
+For the configurations used in Section~\ref{sec:experiments}, FedKAN-8 transmits $|\Theta_{\text{KAN}}| \cdot 4$ bytes $\approx 13.1$~kB per client per round in float32, and the parameter-matched MLP-PM-80 transmits $\approx 13.4$~kB per client per round. All experiments were run on a workstation-class NVIDIA RTX~4090~24GB managed via a \texttt{conda} environment whose recipe ships with the released repository. Per-round wall-clock (excluding the first-round CUDA warm-up) was $1.8$--$2.5$~s for FedKAN and $1.5$--$2.1$~s for MLP-PM, both well within the budget of any realistic IoT FL deployment. We defer FLOPs and peak-memory profiling, including measurements on Raspberry Pi-class hardware, to the camera-ready revision.

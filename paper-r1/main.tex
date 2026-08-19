@@ -1,0 +1,89 @@
+% FedKAN-IDS-v2 — IoT-J target submission
+% Compile: pdflatex main && bibtex main && pdflatex main && pdflatex main
+\documentclass[journal]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, backgrounds, calc}
+
+\graphicspath{{results/figures/}}
+
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+
+\begin{document}
+
+\title{Tuning Confounds the Comparison: What a Controlled Study of\\
+Federated KANs for NetFlow Intrusion Detection Actually Shows}
+
+\author{Phuc~Hao~Do,~\IEEEmembership{Member,~IEEE}, Van~Long~Nguyen, Tran~Duc~Le,
+        and~Truong~Duy~Dinh%
+\thanks{Phuc Hao Do is with the Department of Software Engineering, Danang Architecture University, Da Nang 550000, Vietnam (e-mail: haodp@dau.edu.vn).}%
+\thanks{Van Long Nguyen and Truong Duy Dinh are with the Faculty of Information Security, Posts and Telecommunications Institute of Technology, Ha Noi 10000, Vietnam (e-mail: longnv.b23at174@stu.ptit.edu.vn; duydt@ptit.edu.vn). Truong Duy Dinh is the corresponding author. This work has been sponsored by the scientific research from Posts and Telecommunications Institute of Technology, Vietnam}%
+\thanks{Tran Duc Le is with the Department of Mathematics, Statistics \& Computer Science, University of Wisconsin-Stout, Menomonie, WI 54751, USA (e-mail: let@uwstout.edu).}%
+}
+
+
+\maketitle
+
+\begin{abstract}
+Kolmogorov--Arnold networks (KANs) have been proposed for federated intrusion detection on
+the promise that, at a matched parameter budget, they are more accurate and more stable than
+multilayer perceptrons (MLPs) under client heterogeneity. We tested that promise on three
+standardised NetFlow-v2 datasets (NF-BoT-IoT-v2, NF-ToN-IoT-v2, NF-CSE-CIC-IDS2018-v2) with
+$n=10$ seeds per cell, and it does not survive contact with a controlled comparison.
+\textbf{(i)} The reported advantage is confounded with how much hyper-parameter tuning each
+architecture receives. Sweeping the learning rate over six values for every architecture, the
+$+5.5$~pp mean advantage we ourselves reported on NF-BoT-IoT-v2 falls to $+0.8$~pp
+($p=0.74$) once the parameter-matched MLP is given its own best learning rate, which is an
+order of magnitude away from the shared value. Across all four cells, the advantage ranges
+from $-0.5$ to $+6.2$~pp and is dataset dependent, not architectural.
+\textbf{(ii)} The variance-reduction claim does not generalise: the MLP-to-KAN seed-variance
+ratio is $2.5\times$ on one dataset but $0.71\times$, $0.33\times$ and $0.87\times$ on the
+others, that is, reversed.
+\textbf{(iii)} The two architectures have different and non-overlapping optimal step sizes:
+FedKAN-8 peaks at $3\!\times\!10^{-3}$ to $10^{-2}$ and loses $8.8$~pp at $10^{-1}$, where the
+parameter-matched MLP peaks. A step size inherited from one architecture mis-measures the
+other, which is what happened in the first version of this work and, we suspect, elsewhere.
+\textbf{(iv)} With both tuned, FedKAN-8 is ahead in all four cells by $+0.76$ to $+6.23$~pp.
+Pooled over forty seed pairs this reaches $p=0.032$, but the ten seeds within a cell are not
+independent observations about the architectures; with the cell as the unit, $n=4$ and
+$p=0.164$. The assumption-light statement is a sign test, four of four cells favouring the KAN
+at one-sided $p=0.0625$: a consistent positive direction of small magnitude, not an
+established advantage.
+\textbf{(v)} It is not free either. At matched parameters on single-thread CPU, KAN inference
+costs $19.9\times$ more per sample and $37.9\times$ more per batch of $1000$; parameter parity
+is not cost parity.
+Our contribution is therefore a controlled comparison rather than a method, together with the
+protocol that makes it controlled: tune every architecture, summarise over several rounds, state
+the unit of analysis, and report how far each conclusion moves when those choices change. All
+$1{,}280$ runs are released.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Federated Learning, Kolmogorov-Arnold Networks, IoT Security, Intrusion Detection, Non-IID, Robustness
+\end{IEEEkeywords}
+
+\input{sections/01_intro}
+\input{sections/02_preliminaries}
+\input{sections/03_method}
+\input{sections/04_theory}
+\input{sections/05_experiments}
+\input{sections/06_conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

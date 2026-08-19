@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.15in]{geometry}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=black}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{7pt}
+\pagestyle{empty}
+\begin{document}
+
+\hfill \today
+
+\bigskip
+Dr.\ Bo Li\\
+Editor-in-Chief\\
+IEEE Internet of Things Journal
+
+\bigskip
+Dear Dr.\ Li,
+
+Thank you for the decision on IoT-66559-2026, ``FedKAN-IDS: Heterogeneity-Robust Federated
+Kolmogorov--Arnold Networks for NetFlow-Based IoT Intrusion Detection,'' and for the
+opportunity to revise. We are grateful to both reviewers, whose comments were specific
+enough to be acted on rather than merely acknowledged.
+
+The title has changed, to ``What Federated KANs Actually Buy: Learning-Rate Robustness at a
+Compute Cost for NetFlow-Based IoT Intrusion Detection.'' The previous title promised
+heterogeneity robustness; the revised measurements do not support that, and a title should
+say which of the two a reader is being handed.
+
+We should say at the outset that this is not the same paper with corrections. Reviewer~2's
+seventh comment asked whether the learning rate had been tuned per architecture. It had
+not: the submitted study used $\eta = 10^{-2}$ for every model. We therefore swept the
+learning rate over six values for all four architectures on all ten seeds, and the result
+changed our conclusions rather than confirming them.
+The parameter-matched MLP's best learning rate is an order of magnitude away from the one
+we had used, and giving it that learning rate removes most of the accuracy gap and most of
+the variance gap we had reported as architectural.
+
+Rather than restate a weakened version of the original claim, we have rewritten the paper
+around what the measurements now support. The system, the datasets, the partitioning
+protocol and the implementations are unchanged. The claims built on them are not, and the
+revised manuscript reports smaller numbers than the original in the places where the
+original was generous to our own method. Specifically: the headline binary advantage on
+NF-BoT-IoT-v2 falls from $+5.49$ to $+0.76$~pp once the baseline is tuned; the
+$2.6\times$ variance-reduction figure is withdrawn, since it is $0.71\times$, $0.33\times$ and
+$0.87\times$ on the other three cells and becomes $1.05\times$ on NF-BoT-IoT-v2 itself once
+both architectures are tuned; and the multi-class result is now reported as a range,
+$+0.64$ to $+1.80$~pp depending on the summary statistic, rather than as $+1.735$~pp at
+$p=0.012$ from a single round.
+
+We also owe the Editor two corrections that neither reviewer raised and that we found while
+acting on their comments.
+
+\textbf{First, a result that did not follow.} Corollary~2 of the submitted manuscript
+concluded that FedKAN is intrinsically less sensitive to client heterogeneity. It does not
+follow from Theorem~1: the heterogeneity term in that bound applies identically to both
+architectures, and the spline-approximation residual is an additional error term for the
+KAN rather than a mechanism protecting it. The corollary asserted its conclusion instead of
+deriving it. We have removed it.
+
+\textbf{Second, a reporting choice that overstated precision.} All headline accuracies in
+the submitted manuscript were taken from the final communication round. We measured the
+round-to-round oscillation over the last ten rounds and it is $2.1$ to $2.7$ percentage
+points across all four architectures, which is larger than one of the effects we reported
+as significant. Every accuracy in the revised manuscript is the mean over the final five
+rounds, and we state the estimator explicitly.
+
+\textbf{Single-machine re-run.} Every experiment in this revision, including those that
+appeared in the submitted version, was re-run on one machine. The submitted numbers came
+from an RTX~4090 and a mixture of hardware would have made the new and old numbers
+incomparable. We also report inference and training cost on that hardware, which speaks to
+the deployment questions both reviewers raised.
+
+\textbf{Marked-up copy.} We enclose a clean manuscript and a marked-up copy in which new
+text is highlighted. We should be straightforward about one limitation. Where a passage was
+rewritten rather than edited, an automatic comparison cannot always place the deleted text
+in context, so parts of what was removed do not appear in the marked-up copy at all. We
+measured this rather than leave it implicit: of the previous manuscript's body sentences,
+$18.9\%$ are gone and $35.4\%$ of the present one is new, but the automatic comparison marks
+only $54\%$ of the new sentences and $38\%$ of the deleted ones. The blue marking is reliable
+where it appears; its absence does not mean a passage is unchanged. We therefore list the
+substantive deletions explicitly in the response letter rather than leaving the reader to
+infer them from the markup.
+
+\textbf{Data and code.} The simulator, all model implementations, the added baselines, every
+experiment reported here, and the scripts that regenerate each figure and table are
+available at \url{https://github.com/haodpsut/FedKAN-IDS-v2}.
+
+We hope the reviewers find the changes responsive. Where we have declined a suggestion we
+say so and explain why rather than passing over it in silence.
+
+\bigskip
+Sincerely,
+
+\bigskip
+Phuc Hao Do, on behalf of all authors
+
+\end{document}

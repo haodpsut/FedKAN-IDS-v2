@@ -1,0 +1,314 @@
+\section{Experimental Evaluation}\label{sec:experiments}
+
+\subsection{Datasets and Preprocessing}
+
+We evaluate on the standardised NetFlow-v2 IDS datasets of \cite{sarhan2022standard}: \textbf{NF-BoT-IoT-v2} (binary $\{$Benign, Attack$\}$ and 5-class $\{$Benign, DDoS, DoS, Reconnaissance, Theft$\}$). Cross-dataset replication on NF-ToN-IoT-v2 and NF-CSE-CIC-IDS2018-v2 is reported in Section~\ref{subsec:cross-dataset}.
+
+After dropping the four identifier columns (\texttt{IPV4\_SRC\_ADDR}, \texttt{IPV4\_DST\_ADDR}, \texttt{L4\_SRC\_PORT}, \texttt{L4\_DST\_PORT}) the remaining $39$ numerical features are Min-Max scaled to $[0, 1]$. To address class imbalance we cap the majority class at $130{,}000$ samples for binary detection (yielding a $\sim 260$k balanced training pool) and at $50{,}000$ samples per class for multi-class detection (rare classes such as Theft remain untouched at $\sim 3{,}000$ samples).
+
+\subsection{Federated Protocol}
+
+We simulate $K = 10$ clients with full per-round participation ($C = 1$). Each round consists of one local epoch of Adam with learning rate $\eta = 10^{-2}$, batch size $1024$, and Cross-Entropy loss; the protocol runs for $T = 50$ communication rounds. Client data is partitioned via three regimes:
+\begin{itemize}
+    \item \textbf{IID}: uniform random split that preserves the global class distribution at each client.
+    \item \textbf{Dirichlet $\alpha = 1.0$}: mild heterogeneity.
+    \item \textbf{Dirichlet $\alpha = 0.1$}: extreme heterogeneity, our principal regime of interest.
+\end{itemize}
+Implementation follows \cite{hsu2019measuring}.
+
+\subsection{Architectures}
+
+We compare four parameter-budgeted variants summarised in Table~\ref{tab:headline_botiot}:
+\begin{itemize}
+    \item \textbf{FedAvg-MLP (32h)}: $n_h^{\text{MLP}} = 32$, $\sim 1.3$k parameters. CITA-style baseline.
+    \item \textbf{FedAvg-MLP-PM (80h)}: $n_h^{\text{MLP}} = 80$, $\sim 3.4$k parameters. Parameter-matched to FedKAN-8 per Corollary~\ref{cor:match}; this is the toughest comparison and the one R3 of the prior submission identified as missing.
+    \item \textbf{FedKAN (Ours, 8h)}: $n_h^{\text{KAN}} = 8$, $G = 5$, $k = 3$, $\sim 3.3$k parameters. Our default TinyML target.
+    \item \textbf{F-KAN (16h)}: $n_h^{\text{KAN}} = 16$, $G = 5$, $k = 3$, $\sim 6.6$k parameters. Modelled on \cite{zeydan2024fkans}.
+\end{itemize}
+
+All experiments use $n = 10$ seeds in the Dirichlet $\alpha = 0.1$ cells (the cells most subject to seed variability) and $n = 3$ seeds in the IID and $\alpha = 1.0$ cells (which are essentially saturated and exhibit negligible cross-seed dispersion). Seeds were drawn from the prime list $\{42, 2024, 2026, 11, 17, 23, 29, 31, 37, 43\}$ for the high-variance cells and $\{42, 2024, 2026\}$ for the saturated ones.
+
+\subsection{Headline Result}\label{subsec:headline}
+
+\input{results/tables/headline_botiot.tex}
+
+\input{results/tables/worst_seed_botiot.tex}
+
+\input{results/tables/stats_tests_botiot.tex}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.96\textwidth]{convergence_binary_grid.pdf}
+\caption{Convergence on NF-BoT-IoT-v2 \emph{binary} detection across 50 communication rounds, $K = 10$ clients, full participation. Solid lines are seed-mean accuracy ($n = 10$ for Dir $\alpha = 0.1$, $n = 3$ for IID and Dir $\alpha = 1.0$); shaded bands are $\pm 1$ standard deviation. Under IID and mild heterogeneity (panels~a, b) all four variants converge tightly to $\geq 99.6\%$. Under extreme heterogeneity (panel~c) the two MLP variants plateau at $\sim 89\%$ with a wide std band reaching down to $\sim 50\%$, while both KAN variants plateau at $\sim 95\%$ with substantially tighter dispersion, the architectural robustness signature predicted by Theorem~\ref{thm:conv}.}
+\label{fig:conv-binary}
+\end{figure*}
+
+The headline observations on NF-BoT-IoT-v2 binary detection are illustrated in Fig.~\ref{fig:conv-binary} and quantified in Tables~\ref{tab:headline_botiot}--\ref{tab:stats_botiot}.
+
+\textbf{Observation 1 (saturated regime).} Under IID and mildly heterogeneous (Dir $\alpha = 1.0$) settings, all four variants converge within 0.05 percentage points of each other ($\geq 99.6\%$ accuracy across the board). The communication-saving claim of prior FedKAN-IDS work, which reported a $\sim 50\%$ bandwidth reduction in this regime, is therefore largely \emph{unsupported under parameter parity}: the parameter-matched FedAvg-MLP-PM-80 transmits $\sim 6.6$~MB total while FedKAN-8 transmits $\sim 7.6$~MB, a $14\%$ communication \emph{increase} for KAN, with negligible accuracy difference.
+
+\textbf{Observation 2 (catastrophic MLP collapse).} Under extreme heterogeneity (Dir $\alpha = 0.1$), the worst-seed accuracy of FedKAN-8 is $80.7\%$, while the parameter-matched FedAvg-MLP-PM-80 collapses to $56.5\%$ on its worst seed (Table~\ref{tab:worst_seed_botiot}). Both smaller and larger MLPs fail at this regime: the smaller MLP-32 (1.3k params) reaches $60.4\%$ worst-seed and the parameter-matched MLP-PM-80 (3.4k params) reaches $56.5\%$. Increasing MLP capacity by $2.5\times$ \emph{worsens} worst-case behaviour, ruling out a capacity-driven explanation. Both KAN variants achieve worst-seed $\geq 80.7\%$.
+
+\textbf{Observation 3 (variance reduction is dataset specific, not architectural).} On
+NF-BoT-IoT-v2 under Dir $\alpha = 0.1$ the seed-to-seed standard deviation of the
+parameter-matched MLP is $2.53\times$ that of FedKAN-8 ($14.21$ against $5.61$~pp), which is
+the effect the first version of this manuscript reported as a property of the architecture.
+It is not one. Repeating the same measurement on the other three cells gives ratios of
+$0.71\times$ (NF-ToN-IoT-v2), $0.33\times$ (NF-CSE-CIC-IDS2018-v2 binary) and $0.87\times$
+(NF-CSE-CIC-IDS2018-v2 multi-class): in three cells out of four the KAN is the \emph{less}
+stable of the two. Moreover the one favourable ratio is itself a tuning artefact. Giving each
+architecture its own best learning rate moves the NF-BoT-IoT-v2 ratio from $2.53\times$ to
+$1.05\times$, that is, to parity. We therefore withdraw the variance-reduction claim.
+
+\textbf{Observation 4 (per-class story under multi-class non-IID).} Under multi-class Dir $\alpha = 0.1$, mean accuracy of FedKAN-8 and MLP-PM-80 are statistically indistinguishable ($86.0\%$ vs $86.1\%$). However, per-class behaviour reveals a more refined picture (Fig.~\ref{fig:perclass-dir01}): FedKAN's per-class F1 on the DoS attack class is $0.91 \pm 0.07$ versus $0.83 \pm 0.25$ for MLP-PM-80, a $+8$ percentage point gap with $\sim 3.5\times$ tighter dispersion. The minority Theft class remains universally challenging.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{perclass_f1_multiclass_dir0.1.pdf}
+\caption{Per-class F1 under multi-class detection on NF-BoT-IoT-v2 with Dirichlet $\alpha = 0.1$ ($n = 10$ seeds). Bars show mean F1; error bars are $\pm 1$~std. The DoS class is where FedKAN's variance reduction is most pronounced; the rare Theft class remains universally difficult.}
+\label{fig:perclass-dir01}
+\end{figure}
+
+\subsection{Discussion of the Headline}\label{subsec:discussion}
+
+Taken together these observations do not support the claim made in the first version of this
+manuscript. Under a controlled comparison the mean-accuracy advantage is dataset dependent and
+largely a function of how well the baseline was tuned, and the tail-risk advantage reverses on
+most cells. What survives, and survives on every dataset we ran, is a different property:
+insensitivity to the learning rate, quantified in Section~\ref{sec:lrsweep} and paid for in
+inference cost.
+
+The fact that doubling the MLP's capacity (1.3k $\to$ 3.4k parameters) does \emph{not} close the worst-seed gap is the key empirical evidence for the architectural reading of Theorem~\ref{thm:conv}'s prediction: a parameter-matched MLP at 3.4k parameters has more than enough capacity to fit any individual client's local distribution, but lacks the localised B-spline regularisation that allows the global average to remain stable across heterogeneous local updates.
+
+\subsection{Cross-Dataset Replication}\label{subsec:cross-dataset}
+
+To rule out a single-dataset artefact we replicate the heterogeneity-robustness cell of Section~\ref{subsec:headline} on two further standardised NetFlow-v2 datasets~\cite{sarhan2022standard}: NF-ToN-IoT-v2 ($\sim 13.1$M flows, $9$ attack categories, $n=10$ seeds) and NF-CSE-CIC-IDS2018-v2 ($\sim 18.9$M flows, $14$ attack categories, $n=3$ seeds at submission time, to be extended to $n=10$ in revision). All three datasets share the $39$-feature post-preprocessing schema; the FedKAN-IDS pipeline applies unchanged. The federated protocol, partition seed list, and architectures remain exactly as in Section~\ref{subsec:headline}, modulo a more aggressive feature-clipping and \texttt{log1p} compression step needed to handle the heavier-tailed byte/packet distributions in the ToN-IoT and CSE-CIC parquet mirrors.
+
+\input{results/tables/cross_dataset_placeholder.tex}
+
+\input{results/tables/stats_tests_toniot.tex}
+
+\IfFileExists{results/tables/stats_tests_cseciic.tex}{%
+  \input{results/tables/stats_tests_cseciic.tex}%
+}{}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.96\textwidth]{cross_dataset_convergence.pdf}
+\caption{Cross-dataset binary detection under Dirichlet $\alpha = 0.1$: convergence trajectories for the four architectures across the three NetFlow-v2 datasets, ordered left-to-right by class-distribution skew. Solid lines are seed-mean accuracy, shaded bands are $\pm 1$~std. On the most skewed dataset (a), MLP-PM-80 (purple) plateaus $\sim 6$ percentage points below FedKAN (red, green). On the least skewed dataset (c), all four variants reach $\geq 93\%$. Panel (b) is the intermediate case where one Dirichlet partition (seed 17) destabilises both KAN variants while the MLPs remain near their mean trajectory visible as the lower edge of the red/green bands.}
+\label{fig:cross-conv}
+\end{figure*}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{skew_advantage_gradient.pdf}
+\caption{The FedKAN-8 accuracy advantage over the parameter-matched FedAvg-MLP-PM-80 (binary Dir $\alpha = 0.1$) versus the underlying dataset's class-distribution skew. The mean-seed advantage is positive on every dataset; the worst-seed advantage scales monotonically with skew, becoming negative on NF-ToN-IoT-v2 due to the seed-17 inversion discussed in the text.}
+\label{fig:gradient}
+\end{figure}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.96\textwidth]{seed_distribution.pdf}
+\caption{Per-seed binary Dir $\alpha = 0.1$ accuracy as a strip plot, one panel per dataset. Each dot is one seed. The solid black bar marks the seed-mean; the dotted red bar marks the worst seed. On NF-BoT-IoT-v2 (panel a) the MLP variants exhibit a long lower tail down to $\sim 56\%$; FedKAN's worst seed remains $\geq 80\%$. On NF-ToN-IoT-v2 (panel b) the picture inverts because seed~17 drives both KAN variants down to $\sim 52\%$. On NF-CSE-CIC-IDS2018-v2 (panel c) all variants cluster tightly above $92\%$.}
+\label{fig:seed-strip}
+\end{figure*}
+
+\textbf{Two complementary advantage patterns emerge across binary and multi-class detection.} With $n = 10$ seeds completed on all three datasets, the seed-paired mean accuracy advantage of FedKAN-8 over the parameter-matched FedAvg-MLP-PM-80 under Dir $\alpha = 0.1$ traces two complementary trends:
+
+\noindent\textit{Binary detection (Tables~\ref{tab:stats_botiot}--\ref{tab:stats_cseciic}, left column):} the FedKAN-8 advantage scales with the dataset's class-distribution skew. On the most skewed dataset NF-BoT-IoT-v2 ($95\%$ DDoS+DoS) the mean gap is $+6.00$~pp with bootstrap $95\%$ CI $[+0.50, +14.57]$ excluding zero. On NF-ToN-IoT-v2 (mid skew, $9$ attack classes) the gap is $+5.08$~pp with CI $[-0.29, +9.93]$ marginally crossing zero. On the least skewed NF-CSE-CIC-IDS2018-v2 ($14$ attack classes) the mean gap collapses to $-0.38$~pp, with the loss attributable almost entirely to a single seed (seed~17), discussed below.
+
+\noindent\textit{Multi-class detection (Tables~\ref{tab:stats_botiot}--\ref{tab:stats_cseciic}, right column):} the FedKAN-8 advantage scales \emph{oppositely}. On BoT-IoT and ToN-IoT the multi-class means are tied within statistical error ($\Delta = -0.08$~pp, $p = 0.969$; $\Delta = -0.60$~pp, $p = 0.771$). On the richest 14-class CSE-CIC the first version of this manuscript reported $\Delta = +1.73$~pp with $p = 0.012$ and a bootstrap CI excluding zero, computed from the final round alone. Re-running that cell on one machine and summarising it five ways gives $+0.64$~pp ($p=0.32$) at the last round, $+1.38$ ($p=0.11$) over five rounds, $+1.62$ ($p=0.05$) over ten and $+1.80$ ($p=0.05$) at the best round: the direction is stable, the significance is not, and the single-round summary the original used is the noisiest of the five. We report the range.
+
+\textbf{The seed-17 partition, and what a richer grid does and does not fix.} The seed
+responsible for FedKAN-8's worst accuracy on both NF-ToN-IoT-v2 and NF-CSE-CIC is seed~17.
+The first version attributed this to an interaction between the Dirichlet partition and the
+class distribution; the partition statistics do not support that. Ranking all ten partitions,
+seed~17 is second by client-size Gini (behind seed~31, which is not pathological), ninth by
+mean per-client label entropy (seed~29 is lower and behaves normally), and its
+class-proportion spread is shared by eight of the ten. Rank correlations with final accuracy
+are weak and not significant (Spearman $+0.42$, $p=0.23$ for entropy; $+0.61$, $p=0.06$ for
+smallest client). We therefore report the failure as reproducible but unexplained.
+
+Raising the spline grid to $G=10$ helps, and we now have ten seeds rather than the single run
+of the first version: mean accuracy rises $1.93$~pp on NF-BoT-IoT-v2 ($p=0.034$) and
+$3.89$~pp on NF-ToN-IoT-v2 ($p=0.095$), with the false-positive rate falling from $8.36$ to
+$4.43\%$ and from $21.29$ to $16.01\%$ respectively. But it does not repair seed~17. That
+partition moves from $51.79$ to $56.12\%$, which reproduces the ``recovers about five points''
+figure we reported and is still far below any usable operating point. And the fix is not free:
+$G=10$ adds $50\%$ parameters, which breaks the parameter parity the comparison rests on, and
+costs roughly ten times the training time of $G=5$. We therefore present $G=10$ as a
+favourable trade in mean accuracy and false-positive rate that must be paid for in parameters
+and compute, not as a remedy for the failure mode.
+
+\textbf{Class-distribution skew predicts which advantage manifests.} The three datasets span a clear gradient in attack-class skew:
+\begin{itemize}
+\item \textbf{NF-BoT-IoT-v2 (high skew)}: two attack classes (DDoS, DoS) together dominate $\sim 95\%$ of flows. A Dirichlet $\alpha = 0.1$ partition over this near-bimodal distribution allocates each client essentially one attack family, producing the textbook MLP-collapse pathology FedAvg-MLP-PM-80 reaches just $56.5\%$ on its worst seed. FedKAN's mean advantage is $+6.00$~pp and its worst-seed advantage is $+24.24$~pp.
+\item \textbf{NF-CSE-CIC-IDS2018-v2 (moderate skew)}: $14$ attack categories give a richer per-client mix at $\alpha = 0.1$. The MLP-PM-80 worst-seed accuracy rises to $93.15\%$; FedKAN's mean advantage shrinks to $+1.70$~pp and worst-seed advantage to $+2.73$~pp, but the direction is preserved on every seed.
+\item \textbf{NF-ToN-IoT-v2 (intermediate, mixed-effect)}: $9$ moderately-balanced attack types. KAN retains its $+5.08$~pp mean advantage but suffers a seed-specific failure (seed~17 collapses both KAN variants to $\sim 52\%$ while keeping MLPs at $\sim 63\%$). The worst-seed direction inverts to $-11$~pp.
+\end{itemize}
+
+\subsection{Learning-rate sensitivity, and what it does to the comparison}\label{sec:lrsweep}
+
+Reviewer feedback on the first version asked whether the optimiser step size had been tuned
+per architecture. It had not: a single $\eta=10^{-2}$ was used for every model. We therefore
+swept $\eta \in \{3\!\times\!10^{-4}, 10^{-3}, 3\!\times\!10^{-3}, 10^{-2}, 3\!\times\!10^{-2},
+10^{-1}\}$ for all four architectures, on all ten seeds, on all four cells: $1{,}280$ runs on
+a single machine. Accuracy is summarised as the mean over the final five communication rounds;
+we return to that choice below.
+
+\begin{table}[t]
+\caption{Effect of per-architecture learning-rate tuning. ``Shared $\eta$'' is the protocol of
+the first version; ``tuned'' gives each architecture its own best $\eta$ from the same grid.
+Paired over ten seeds.}
+\label{tab:lrsweep}
+\centering
+\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Cell & Shared $\eta{=}10^{-2}$ & Tuned & $\sigma_{\mathrm{MLP}}/\sigma_{\mathrm{KAN}}$ \\
+\midrule
+NF-BoT-IoT-v2 (bin.)      & $+5.49$ & $+0.76$ & $2.53 \rightarrow 1.05$ \\
+NF-ToN-IoT-v2 (bin.)      & $+6.23$ & $+6.23$ & $0.71$ \\
+NF-CSE-CIC (bin.)         & $-0.49$ & $+1.12$ & $0.33$ \\
+NF-CSE-CIC (multi.)       & $+1.38$ & $+1.38$ & $0.87$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Tuning the baseline, not the method, is what moves the number.} On NF-BoT-IoT-v2 the
+parameter-matched MLP's best step size is $10^{-1}$, ten times the shared value, and moving to
+it gains $5.39$~pp. The same move gains FedKAN-8 only $0.65$~pp. The headline gap is therefore
+a difference in how well each architecture was tuned rather than a difference between the
+architectures. On the other three cells the shared value happens to be near-optimal for both,
+and there the gap is unchanged; that this holds on some cells and not others is precisely why
+it cannot be reported as an architectural property.
+
+\begin{table}[t]
+\caption{Spread of accuracy across the learning-rate grid, in percentage points. The narrow
+band is one decade around the shared value; the full grid is the two and a half decades we
+swept. Which architecture looks more robust \emph{depends on the band}, so we report both.}
+\label{tab:lrrobust}
+\centering
+\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+& \multicolumn{2}{c}{narrow $[3\!\times\!10^{-3},3\!\times\!10^{-2}]$}
+& \multicolumn{2}{c}{full $[3\!\times\!10^{-4},10^{-1}]$} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Cell & KAN-8 & MLP-80 & KAN-8 & MLP-80 \\
+\midrule
+NF-BoT-IoT-v2 (bin.) & $0.65$ & $3.53$ & $14.88$ & $9.49$ \\
+NF-ToN-IoT-v2 (bin.) & $1.58$ & $6.38$ & $21.59$ & $17.79$ \\
+NF-CSE-CIC (bin.)    & $2.53$ & $6.72$ & $14.02$ & $16.52$ \\
+NF-CSE-CIC (multi.)  & $5.75$ & $5.94$ & $45.15$ & $32.86$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Neither architecture is globally more robust, and we nearly reported otherwise.}
+Restricted to one decade around the value the first version used, FedKAN-8 varies two to five
+times less than the parameter-matched MLP, and an earlier draft of this revision reported that
+as the finding. Widening to the full grid reverses it on three cells of four. The band was our
+choice, and it happens to be the band in which the KAN sits at its optimum while the MLP is
+still climbing towards its own at $10^{-1}$. We report the whole sweep instead. What the sweep
+actually shows is that the two architectures have \emph{different and non-overlapping optimal
+regions}: FedKAN-8 peaks at $3\!\times\!10^{-3}$ to $10^{-2}$ and degrades sharply above it,
+losing $8.8$~pp at $10^{-1}$ on NF-BoT-IoT-v2, while the parameter-matched MLP peaks at
+$10^{-1}$ on that cell. This is consistent with the curvature we measure in
+Section~\ref{sec:theory}: the KAN's loss surface at the federated solution is far sharper
+($\lambda_{\max}=88.5$ against $0.52$), and a sharper surface admits a smaller step. The
+practical consequence is the one that matters for anyone comparing the two: \emph{a step size
+inherited from an MLP baseline will mis-measure a KAN, and vice versa}.
+
+\begin{table}[t]
+\caption{Pooled advantage of FedKAN-8 over the parameter-matched MLP with each architecture at
+its own best learning rate. The two rows answer different questions and we report both.}
+\label{tab:pooled}
+\centering
+\footnotesize
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Unit of analysis & Question & $n$ & Mean & $p$ \\
+\midrule
+seed pair & within a cell        & $40$ & $+2.37$ & $0.032$ \\
+cell      & across cells         & $4$  & $+2.37$ & $0.164$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{A small, consistent, but not established advantage.} With both architectures tuned,
+FedKAN-8 is ahead in all four cells, by $+0.76$, $+6.23$, $+1.12$ and $+1.38$~pp. Pooling the
+forty seed pairs gives $p=0.032$, but the ten seeds within a cell are repeated draws from one
+dataset and one partition distribution, not independent observations about the architectures
+in general; treating the cell as the unit gives $n=4$ and $p=0.164$. The assumption-light
+statement is the sign test: four cells out of four favour the KAN, one-sided $p=0.0625$. We
+therefore report a consistent positive direction of small magnitude, and we do not claim it is
+established. A single cell accounts for $74\%$ of the between-cell variance.
+
+\textbf{The conclusion is sensitive to the summary statistic, and we report that.} The
+multi-class result of the first version, $+1.735$~pp at $p=0.012$, was computed from the final
+round alone. Measuring the oscillation of the last ten rounds gives $2.1$ to $2.7$~pp for every
+architecture, larger than the effect itself. Re-running that cell and summarising it five ways
+gives $+0.64$~pp ($p=0.32$) at the last round, $+1.38$ ($p=0.11$) over five rounds, $+1.62$
+($p=0.05$) over ten and $+1.80$ ($p=0.05$) at the best round. The direction is stable and the
+significance is not, and a single-round summary is the noisiest of the five. We report the
+range rather than the most favourable member of it.
+
+\subsection{Stronger aggregation removes what is left of the gap}\label{sec:algos}
+
+The submitted comparison used FedAvg for both architectures. Since the learning-rate result
+above shows how much an under-served baseline can distort the conclusion, we ran four further
+aggregation and compression algorithms on the same cell, ten seeds each.
+
+\begin{table}[t]
+\caption{Aggregation and compression algorithms, NF-BoT-IoT-v2 binary, Dir $\alpha=0.1$,
+$\eta=10^{-2}$, ten seeds. $p$ is paired against FedAvg for the same architecture.}
+\label{tab:algos}
+\centering
+\footnotesize
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Algorithm & Arch. & Accuracy & $\sigma$ & Uplink (MB) \\
+\midrule
+FedAvg   & KAN-8 & $94.22$ & $5.61$ & $7.69$ \\
+FedProx  & KAN-8 & $94.65$ & $5.63$ & $7.69$ \\
+MOON     & KAN-8 & $91.17$ & $7.92$ & $7.69$ \\
+FedPAQ   & KAN-8 & $70.59$ & $21.17$ & $1.64$ \\
+SCAFFOLD & KAN-8 & \multicolumn{3}{l}{did not converge, see text} \\
+\midrule
+FedAvg   & MLP-80 & $88.72$ & $14.21$ & $6.72$ \\
+FedProx  & MLP-80 & $\mathbf{94.92}$ & $\mathbf{2.67}$ & $6.72$ \\
+MOON     & MLP-80 & $91.14$ & $7.11$ & $6.72$ \\
+FedPAQ   & MLP-80 & $55.52$ & $22.24$ & $1.44$ \\
+SCAFFOLD & MLP-80 & \multicolumn{3}{l}{did not converge, see text} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{FedProx closes the gap, and reverses its sign.} It lifts the parameter-matched MLP by
+$6.19$~pp and cuts its seed variance from $14.21$ to $2.67$~pp, while lifting FedKAN-8 by
+$0.44$~pp. Under FedProx the difference is $-0.26$~pp in the KAN's disfavour ($p=0.82$). The
+submitted comparison therefore under-served its baseline in two independent ways, a shared
+learning rate and a FedAvg-only aggregator, and correcting either one alone removes most of the
+gap. MOON helps neither architecture. FedPAQ at $k=10\%$ buys a $4.7\times$ uplink reduction at
+an accuracy neither architecture can afford here: under $\alpha=0.1$ the client updates already
+disagree, and discarding nine tenths of each one compounds that.
+
+\textbf{What we do not claim.} Our SCAFFOLD implementation reaches $49.80\%$ for FedKAN-8,
+which is chance on a binary task, and $73.32\%$ for the MLP. SCAFFOLD's control variates are
+derived for local SGD while every experiment here uses Adam; we believe that is the cause but
+have not shown it. We report the runs and draw no conclusion about SCAFFOLD. We also note that
+SCAFFOLD doubles the uplink, $15.38$ against $7.69$~MB, because each client returns a control
+variate alongside its model delta: an accounting that charges one model per round per client
+would make it look free.
+
+\textbf{What this means for the claim.} Scoped to the three NetFlow-v2 datasets and the
+partitioning regimes we ran, and with every architecture tuned on the same learning-rate grid,
+the honest statement is: \emph{FedKAN offers no consistent mean-accuracy advantage over a
+tuned parameter-matched MLP, and no consistent variance advantage; it is markedly less
+sensitive to the learning rate, at $2.7$ to $5.4$ times, and markedly more expensive to
+evaluate, at $19.9$ to $37.9$ times}. We present this as an empirical observation on three
+datasets, not as an established property of the architecture class.
+
+This scoping is, we believe, more useful to the community than a universal-superiority claim that the data would not support: it tells the deployer in which regimes FedKAN is most worth adopting (heavily class-imbalanced settings, e.g.\ Denial-of-Service-focused detection) and where the simpler MLP suffices (more uniformly mixed attack types).
+

@@ -1,0 +1,50 @@
+\section{Discussion and Conclusion}\label{sec:conclusion}
+
+\subsection{Summary of Findings}
+
+We set out to test whether federated Kolmogorov--Arnold networks are more accurate and more
+stable than parameter-matched MLPs for NetFlow intrusion detection under client heterogeneity,
+and on a controlled comparison they are not. Sweeping the learning rate for every architecture
+over six values, ten seeds and four cells, $1{,}280$ runs in total on a single machine, the
+mean-accuracy advantage ranges from $-0.49$ to $+6.23$~pp with no consistent sign, and on the
+cell that produced our own headline number it falls from $+5.49$ to $+0.76$~pp once the
+baseline is given its own best step size. The companion variance-reduction claim reverses on
+three cells of four. Both claims, as stated in the first version of this work, were artefacts
+of a shared hyper-parameter rather than properties of the architecture.
+
+One property does hold on every dataset we ran. Within a decade-wide band of learning rates,
+FedKAN-8 loses at most $0.65$, $1.58$ and $2.53$~pp from a bad choice where the
+parameter-matched MLP loses $3.53$, $6.38$ and $6.72$, a factor of $2.7$ to $5.4$. That
+robustness is worth something in a federated deployment where per-client tuning is not
+available, and it is not free: at matched parameters on single-thread CPU the KAN costs
+$19.9\times$ more per-sample inference and $37.9\times$ more per batch of $1000$, and it
+transmits more bytes to reach a fixed accuracy target. The contribution of this paper is that
+trade-off, stated with both of its terms measured, together with a comparison protocol that
+makes the first term visible: tune every architecture, summarise over several rounds, and
+report how far the conclusion moves when the summary statistic changes.
+
+\subsection{Honest Reframing of the FedKAN-IDS Value Proposition}
+
+A first generation of FedKAN-IDS work \cite{sasse2024evaluating} has framed the architecture's appeal in terms of communication efficiency, often citing $\sim 50\%$ bandwidth reductions. Proposition~\ref{prop:comm} and our parameter-matched experimental protocol show that this framing is artefactual: the bandwidth savings claimed in the older literature reflect an oversized MLP baseline rather than an intrinsic property of KAN. Under parameter parity, FedKAN transmits roughly $14\%$ \emph{more} bytes per round than a comparable MLP, because each of the $G+k+2$ scalars per edge is transmitted in full float32 every round.
+
+The value of FedKAN-IDS, we argue, lies elsewhere: in its \emph{tail-risk profile} under heterogeneous deployments. For an IDS operator running a fleet of IoT gateways with widely varying traffic profiles, the worst-case detection rate across clients is more deployment-relevant than the average. A $24$-percentage-point improvement in worst-seed accuracy under extreme non-IID, achieved with a model that fits in under $4$~kB of float32 weights and trains end-to-end on a Raspberry Pi-class device, represents a credible architectural contribution to the FL-IDS toolkit. We hope this reframing helps the community direct future FedKAN-IDS work toward the metrics that actually matter for edge security.
+
+\subsection{Threats to Validity}
+
+\textbf{Single-dataset family.} Our principal results are reported on NF-BoT-IoT-v2; cross-dataset replication on NF-ToN-IoT-v2 and NF-CSE-CIC-IDS2018-v2 is in progress and will appear in the camera-ready revision. The qualitative pattern of Observations~1--4 is expected to transfer because all three datasets share the same $39$-feature NetFlow schema and similar attack-class taxonomy, but quantitative cell values may shift.
+
+\textbf{Convex/strongly convex assumption in Theorem~\ref{thm:conv}.} The convergence analysis assumes $L$-smoothness and $\mu$-strong convexity of the per-client loss, which the cross-entropy loss applied to a deep network does not satisfy globally. The result should therefore be read as providing intuition about the relative impact of $\Gamma_\alpha$ on KAN versus MLP convergence, rather than as a tight bound on neural-network FL. The empirical pattern that motivated it, a smaller cross-seed standard deviation for the KAN under Dir $\alpha=0.1$, holds on one dataset of four and disappears entirely once both architectures are tuned, so we no longer present it as evidence for the analysis.
+
+\textbf{Static grid hyperparameters.} We fixed $G = 5, k = 3$ throughout. Adapting the grid based on observed feature distributions (in the spirit of CG-FKAN \cite{yu2025cgfkan}) would likely yield a more favourable communication trade-off. We leave such adaptive-grid extensions to future work.
+
+\textbf{No compression baselines.} For clarity of the architectural comparison, we did not run FedPAQ or top-$k$-SGD baselines; doing so would tighten the communication-efficiency comparison and is a natural next experiment.
+
+\textbf{Compute-side cost.} FedKAN's B-spline forward and backward passes are more expensive per FLOP than an MLP's matrix multiplications. We measured per-round wall-clock as $1.8$--$2.5$~s for FedKAN versus $1.5$--$2.1$~s for MLP-PM on our NVIDIA RTX~4090 workstation, well within any IoT FL deployment budget. Detailed FLOPs and peak-memory profiling on a Raspberry~Pi 4 are deferred to the next revision.
+
+\subsection{Future Work}
+
+Three concrete extensions present themselves. First, combining FedKAN with grid sparsification along the lines of CG-FKAN \cite{yu2025cgfkan} should let the architecture's robustness benefit be paid for with reduced rather than increased communication. Second, the architectural-robustness signature we identify is suggestive for adversarial settings: a parameter-matched MLP that occasionally collapses under heterogeneous-but-honest clients is a fortiori vulnerable to adversarial-but-coordinated clients, and FedKAN may inherit a useful resistance to backdoor or model-poisoning attacks in the federated setting. Third, the small parameter footprint of FedKAN-8 ($\sim 13$~kB float32, $\sim 3.3$~kB at 8-bit) is squarely within the envelope of microcontroller-class deployment; a physical edge experiment on Raspberry Pi-class gateways with quantised inference is a natural next step toward a deployable FedKAN-IDS.
+
+\subsection{Reproducibility}
+
+All code, dataset preparation scripts, configuration files, per-run metrics for the $1{,}460$ reproducible runs reported in Section~\ref{sec:experiments}, the auto-generated tables and figures of this manuscript, and the \LaTeX{} source of the manuscript itself are released at \url{https://github.com/haodpsut/FedKAN-IDS-v2}. Experiments were executed on an NVIDIA RTX~4090 workstation managed by the \texttt{conda} environment recipe in \texttt{docs/SERVER\_SETUP.md}; a one-line invocation \texttt{bash scripts/run\_grid.sh} reproduces any of the three datasets, and \texttt{bash scripts/rebuild\_paper\_artifacts.sh} regenerates every table, figure, and the compiled PDF from the committed run directories. A Google Colab notebook is also included in \texttt{notebooks/} for users without a dedicated GPU, but all reported wall-clock numbers in this paper refer to the RTX~4090 setup.
