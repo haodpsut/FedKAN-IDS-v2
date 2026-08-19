@@ -9,6 +9,8 @@ import sys
 from pathlib import Path
 
 import matplotlib as mpl
+
+import plotstyle  # MOT cho duy nhat dinh nghia kieu ve
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -17,16 +19,7 @@ RUNS = ROOT / "results" / "runs"
 OUT = ROOT / "results" / "figures"
 
 
-mpl.rcParams.update({
-    "font.family": "serif",
-    "font.size": 10,
-    "axes.labelsize": 11, "axes.titlesize": 11, "legend.fontsize": 9,
-    "xtick.labelsize": 9, "ytick.labelsize": 9,
-    "axes.linewidth": 0.8,
-    "axes.grid": True, "grid.alpha": 0.35, "grid.linestyle": "--",
-    "axes.axisbelow": True,
-    "savefig.bbox": "tight", "savefig.dpi": 300,
-})
+plotstyle.apply()
 
 VARIANT_ORDER = ["mlp_h32", "mlp_h80", "kan_h8", "kan_h16"]
 VARIANT_LABEL = {

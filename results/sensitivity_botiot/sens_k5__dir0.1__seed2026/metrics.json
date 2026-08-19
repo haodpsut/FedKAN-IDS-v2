@@ -1,0 +1,36 @@
+{
+  "run_id": "sens_k5__dir0.1__seed2026",
+  "seed": 2026,
+  "device": "cpu",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 5,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "n_params": 3936,
+  "bytes_per_round_uplink": 18752,
+  "total_uplink_bytes": 9376000,
+  "final_metrics": {
+    "accuracy": 0.9525507352516045,
+    "f1_macro": 0.9524544484997737,
+    "f1_weighted": 0.9524497887982932,
+    "per_class_precision": [
+      0.9133580377624846,
+      0.9997027853260869
+    ],
+    "per_class_recall": [
+      0.9997295940047128,
+      0.9055769230769231
+    ],
+    "per_class_f1": [
+      0.9545940762052304,
+      0.9503148207943171
+    ]
+  },
+  "best_accuracy": 0.9598936149709947,
+  "rounds": 50
+}

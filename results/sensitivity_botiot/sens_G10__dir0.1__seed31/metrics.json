@@ -1,0 +1,36 @@
+{
+  "run_id": "sens_G10__dir0.1__seed31",
+  "seed": 31,
+  "device": "cpu",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 10,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "n_params": 4920,
+  "bytes_per_round_uplink": 22876,
+  "total_uplink_bytes": 11438000,
+  "final_metrics": {
+    "accuracy": 0.9741746487559504,
+    "f1_macro": 0.9741626748243082,
+    "f1_weighted": 0.9741614634955028,
+    "per_class_precision": [
+      0.9526127521480989,
+      0.9977795720629794
+    ],
+    "per_class_recall": [
+      0.9978753814656005,
+      0.9505769230769231
+    ],
+    "per_class_f1": [
+      0.9747188891404422,
+      0.9736064605081741
+    ]
+  },
+  "best_accuracy": 0.9954131092566538,
+  "rounds": 50
+}

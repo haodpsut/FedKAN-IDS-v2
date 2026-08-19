@@ -17,6 +17,8 @@ import json
 from pathlib import Path
 
 import matplotlib as mpl
+
+import plotstyle  # MOT cho duy nhat dinh nghia kieu ve
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -26,16 +28,7 @@ RUNS = ROOT / "results" / "runs"
 OUT = ROOT / "results" / "figures"
 
 
-mpl.rcParams.update({
-    "font.family": "serif", "font.size": 10,
-    "axes.labelsize": 11, "axes.titlesize": 11, "legend.fontsize": 8.5,
-    "xtick.labelsize": 9, "ytick.labelsize": 9,
-    "axes.linewidth": 0.8,
-    "lines.linewidth": 2.0, "lines.markersize": 5,
-    "axes.grid": True, "grid.alpha": 0.35, "grid.linestyle": "--",
-    "axes.axisbelow": True,
-    "savefig.bbox": "tight", "savefig.dpi": 300,
-})
+plotstyle.apply()
 
 VARIANT_ORDER = ["mlp_h32", "mlp_h80", "kan_h8", "kan_h16"]
 VARIANT_LABEL = {
@@ -178,10 +171,10 @@ def fig_gradient(runs: list[dict]):
     fig, ax = plt.subplots(figsize=(5.5, 3.4))
     x = np.arange(len(dataset_labels))
     w = 0.38
-    bars1 = ax.bar(x - w / 2, mean_gap, w, color="#d62728",
+    bars1 = ax.bar(x - w / 2, mean_gap, w, color=plotstyle.DIFF_MEAN,
                    edgecolor="black", linewidth=0.6,
                    label=r"Mean-seed advantage")
-    bars2 = ax.bar(x + w / 2, worst_gap, w, color="#fdcb6e",
+    bars2 = ax.bar(x + w / 2, worst_gap, w, color=plotstyle.DIFF_WORST,
                    edgecolor="black", linewidth=0.6,
                    label=r"Worst-seed advantage")
     ax.axhline(0, color="black", lw=0.8)

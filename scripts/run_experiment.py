@@ -24,6 +24,7 @@ from src.utils import (  # noqa: E402
 from src.data import build_federated_split  # noqa: E402
 from src.models import build_model, count_params  # noqa: E402
 from src.fl import federated_train  # noqa: E402
+from src.fl_algos import federated_train_algo  # noqa: E402
 
 
 def _parse_hidden(s: str) -> list[int]:
@@ -55,6 +56,18 @@ def main():
                    help="KAN B-spline order.")
     p.add_argument("--skip-existing", action="store_true",
                    help="Do not re-run if metrics.json already exists.")
+    # Added 18/08/2026 for Reviewer 2 comment 7: the submitted study used a single
+    # lr=0.01 for every architecture and never tuned it per model class, so the
+    # parameter-matched comparison was not learning-rate-matched. This flag exists
+    # so each architecture can be given its own best lr before they are compared.
+    # R1#2 / R2#2: thuat toan lien ket. "fedavg" giu nguyen duong cu trong src/fl.py
+    # (da kiem: hai duong cho ket qua TRUNG KHIT tung chu so).
+    p.add_argument("--algo", default="fedavg",
+                   choices=["fedavg","fedprox","scaffold","moon","fedpaq"])
+    p.add_argument("--prox-mu", type=float, default=0.01)
+    p.add_argument("--topk-frac", type=float, default=0.1)
+    p.add_argument("--lr", type=float, default=None,
+                   help="Override fl.lr (per-architecture tuning, R2#7).")
     args = p.parse_args()
 
     cfg = load_config(args.config)
@@ -66,6 +79,11 @@ def main():
         cfg["data"]["alpha"] = args.alpha
     if args.rounds is not None:
         cfg["fl"]["rounds"] = args.rounds
+    if args.lr is not None:
+        cfg["fl"]["lr"] = args.lr
+    cfg["fl"]["algo"] = args.algo
+    cfg["fl"]["prox_mu"] = args.prox_mu
+    cfg["fl"]["topk_frac"] = args.topk_frac
     if args.mode is not None:
         cfg["data"]["mode"] = args.mode
     if args.downsample is not None:
@@ -119,14 +137,28 @@ def main():
               f"uplink_kB={metrics['comm_uplink_bytes']/1024:.1f}  "
               f"t={metrics['wallclock_s']:.2f}s")
 
-    result = federated_train(
-        model_factory=factory,
-        train_loaders=train_loaders,
-        test_loader=test_loader,
-        cfg_fl=cfg["fl"],
-        device=device,
-        on_round_end=on_round_end,
-    )
+    # fedavg di DUONG CU trong src/fl.py de khong lam troi 310 run da co; cac thuat
+    # toan khac di src/fl_algos.py. Hai duong da doi chieu: FedAvg cho ket qua trung
+    # khit tung chu so va cung so byte moi vong.
+    if args.algo == "fedavg":
+        result = federated_train(
+            model_factory=factory,
+            train_loaders=train_loaders,
+            test_loader=test_loader,
+            cfg_fl=cfg["fl"],
+            device=device,
+            on_round_end=on_round_end,
+        )
+    else:
+        result = federated_train_algo(
+            model_factory=factory,
+            train_loaders=train_loaders,
+            test_loader=test_loader,
+            cfg_fl=cfg["fl"],
+            device=device,
+            algo=args.algo,
+            on_round_end=on_round_end,
+        )
 
     summary = {
         "run_id": run_id_for(cfg, seed),
@@ -139,6 +171,7 @@ def main():
         "data_mode": cfg["data"].get("mode", "binary"),
         "data_partition": cfg["data"].get("partition", "dirichlet"),
         "data_alpha": cfg["data"].get("alpha"),
+        "algo": args.algo,
         "n_params": n_params,
         "bytes_per_round_uplink": result["bytes_per_round_uplink"],
         "total_uplink_bytes": int(sum(result["history"]["comm_uplink_bytes"])),

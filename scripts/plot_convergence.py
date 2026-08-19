@@ -12,6 +12,8 @@ import sys
 from pathlib import Path
 
 import matplotlib as mpl
+
+import plotstyle  # MOT cho duy nhat dinh nghia kieu ve
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -21,34 +23,27 @@ RUNS = ROOT / "results" / "runs"
 OUT = ROOT / "results" / "figures"
 
 
-mpl.rcParams.update({
-    "font.family": "serif",
-    "font.size": 10,
-    "axes.labelsize": 11, "axes.titlesize": 11, "legend.fontsize": 9,
-    "xtick.labelsize": 9, "ytick.labelsize": 9,
-    "axes.linewidth": 0.8,
-    "lines.linewidth": 2.0, "lines.markersize": 5,
-    "axes.grid": True, "grid.alpha": 0.35, "grid.linestyle": "--",
-    "savefig.bbox": "tight", "savefig.dpi": 300,
-})
+# R1#7 doi tang co chu, lam ro khoang tin cay, va don gian hoa. Con so duoi day
+# la co chu SAU khi hinh bi thu ve mot cot IEEE (~3,5 inch), khong phai co chu
+# luc ve: mot hinh 4,5 inch nhung 3,5 inch thi moi so deu nho di 1,3 lan.
+plotstyle.apply()
 
 
 # Stable visual mapping; new variants get a fallback colour/marker.
-VARIANT_STYLE: dict[str, dict] = {
-    "kan_h8":     dict(color="#d62728", marker="s", label="FedKAN (Ours, 8h)"),
-    "mlp_h32":    dict(color="#1f77b4", marker="o", label="FedAvg-MLP (32h)"),
-    "mlp_h80":    dict(color="#9467bd", marker="^", label="FedAvg-MLP-PM (80h)"),
-    "kan_h16":    dict(color="#2ca02c", marker="D", label="F-KAN (16h)"),
-    "kan_h16x16": dict(color="#ff7f0e", marker="v", label="F-KAN (16x16)"),
-}
-_FALLBACK = ["#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]
+# Bang mau Okabe-Ito: an toan voi ca ba dang mu mau pho bien, va con phan biet
+# duoc khi in den trang vi do sang khac nhau. Bang cu dung do #d62728 va xanh la
+# #2ca02c canh nhau, cap te nhat cho nguoi mu mau do-luc.
+# KHOA THEO PHUONG PHAP: mot kien truc giu MOT mau o MOI hinh. Bai nop truoc do
+# co kan_h8 mau do o hinh nay va mau khac o hinh kia, nguoi doc phai tra chu giai lai.
+VARIANT_STYLE = plotstyle.VARIANT_STYLE
+_FALLBACK = plotstyle.FALLBACK
 
 
 def _style_for(variant: str, idx: int) -> dict:
     if variant in VARIANT_STYLE:
         return VARIANT_STYLE[variant]
     return dict(color=_FALLBACK[idx % len(_FALLBACK)],
-                marker="x", label=variant)
+                marker="x", ls="-", label=variant)
 
 
 def parse(rid: str):
@@ -105,9 +100,11 @@ def panel(ax, dfs_by_variant: dict, title: str):
         mean = accs.mean(0); std = accs.std(0)
         st = _style_for(variant, i)
         ax.plot(rounds, mean, color=st["color"], marker=st["marker"],
+                linestyle=st.get("ls", "-"),
                 markevery=5, label=f"{st['label']} (n={len(dfs)})")
         ax.fill_between(rounds, mean - std, mean + std,
-                        color=st["color"], alpha=0.15)
+                        color=st["color"], alpha=0.22,
+                        edgecolor=st["color"], linewidth=0.7)
     ax.set_xlabel("Communication Round")
     ax.set_ylabel("Global Accuracy")
     ax.set_title(title)

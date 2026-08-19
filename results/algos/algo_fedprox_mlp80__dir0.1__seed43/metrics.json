@@ -1,0 +1,37 @@
+{
+  "run_id": "algo_fedprox_mlp80__dir0.1__seed43",
+  "seed": 43,
+  "device": "cpu",
+  "model_name": "mlp",
+  "model_hidden": [
+    80
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "fedprox",
+  "n_params": 3362,
+  "bytes_per_round_uplink": 13448,
+  "total_uplink_bytes": 6724000,
+  "final_metrics": {
+    "accuracy": 0.9229864898722223,
+    "f1_macro": 0.9225514066887038,
+    "f1_weighted": 0.9225640486017245,
+    "per_class_precision": [
+      0.9950251006286464,
+      0.8694922084900591
+    ],
+    "per_class_recall": [
+      0.8498860431877003,
+      0.9957692307692307
+    ],
+    "per_class_f1": [
+      0.9167465311054628,
+      0.9283562822719449
+    ]
+  },
+  "best_accuracy": 0.9668317690365602,
+  "rounds": 50
+}

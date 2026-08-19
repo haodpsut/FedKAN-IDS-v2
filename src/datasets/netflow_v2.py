@@ -172,6 +172,33 @@ def write_cache(name: str, df: pd.DataFrame, meta: dict) -> Path:
     return parq
 
 
+def _npy_paths(name: str):
+    return (CACHE_DIR / f"{name}.X.npy", CACHE_DIR / f"{name}.yb.npy",
+            CACHE_DIR / f"{name}.ym.npy")
+
+
+def build_npy_cache(name: str) -> None:
+    """Ghi mang da tien xu ly ra .npy de nhieu tien trinh ANH XA CHUNG mot ban.
+
+    Vi sao can: mot run nap nguyen parquet ton ~2 GB; sau tien trinh song song la
+    12 GB tren may 16 GB va no swap (do duoc: 3,98/5,12 GB swap, 2,47 trieu pageout).
+    Voi .npy + mmap_mode='r' thi ca sau tien trinh dung CHUNG mot ban trong page
+    cache cua he dieu hanh, nen bo nho khong nhan len theo so tien trinh.
+
+    KHONG doi mot con so nao: cung du lieu, cung thu tu dong, cung dtype. Ham
+    load_cached ben duoi co kiem tra hinh dang truoc khi dung duong nhanh.
+    """
+    parq, meta_path = cache_paths(name)
+    with open(meta_path, "r", encoding="utf-8") as f:
+        meta = yaml.safe_load(f)
+    df = pd.read_parquet(parq)
+    feat = meta["feature_names"]
+    fx, fyb, fym = _npy_paths(name)
+    np.save(fx, df[feat].to_numpy(dtype=np.float32))
+    np.save(fyb, df["__y_binary"].to_numpy(dtype=np.int64))
+    np.save(fym, df["__y_multiclass"].to_numpy(dtype=np.int64))
+
+
 def load_cached(name: str) -> NetflowDataset:
     parq, meta_path = cache_paths(name)
     if not parq.exists():
@@ -181,8 +208,18 @@ def load_cached(name: str) -> NetflowDataset:
         )
     with open(meta_path, "r", encoding="utf-8") as f:
         meta = yaml.safe_load(f)
-    df = pd.read_parquet(parq)
     feat = meta["feature_names"]
+
+    fx, fyb, fym = _npy_paths(name)
+    if fx.exists() and fyb.exists() and fym.exists():
+        X = np.load(fx, mmap_mode="r")
+        yb = np.load(fyb, mmap_mode="r")
+        ym = np.load(fym, mmap_mode="r")
+        if X.shape[1] == len(feat) and len(X) == len(yb) == len(ym):
+            return NetflowDataset(X=X, y_binary=yb, y_multiclass=ym,
+                                  feature_names=feat, class_names=meta["class_names"])
+
+    df = pd.read_parquet(parq)
     return NetflowDataset(
         X=df[feat].to_numpy(dtype=np.float32),
         y_binary=df["__y_binary"].to_numpy(dtype=np.int64),
