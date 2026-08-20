@@ -1,0 +1,37 @@
+{
+  "run_id": "lrsweep_mlp80_lr0p01__dir0.1__seed105",
+  "seed": 105,
+  "device": "cpu",
+  "model_name": "mlp",
+  "model_hidden": [
+    80
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "fedavg",
+  "n_params": 3362,
+  "bytes_per_round_uplink": 13448,
+  "total_uplink_bytes": 6724000,
+  "final_metrics": {
+    "accuracy": 0.9977836452290555,
+    "f1_macro": 0.9977836450183081,
+    "f1_weighted": 0.9977836465067115,
+    "per_class_precision": [
+      0.9959205665024631,
+      0.9996525498976953
+    ],
+    "per_class_recall": [
+      0.9996523351489165,
+      0.9959230769230769
+    ],
+    "per_class_f1": [
+      0.9977829615777603,
+      0.9977843284588559
+    ]
+  },
+  "best_accuracy": 0.9980920076319695,
+  "rounds": 50
+}

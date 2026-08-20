@@ -1,0 +1,37 @@
+{
+  "run_id": "lowhet_mlp80__dir1.0__seed43",
+  "seed": 43,
+  "device": "cpu",
+  "model_name": "mlp",
+  "model_hidden": [
+    80
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 1.0,
+  "algo": "fedavg",
+  "n_params": 3362,
+  "bytes_per_round_uplink": 13448,
+  "total_uplink_bytes": 6724000,
+  "final_metrics": {
+    "accuracy": 0.9973211016246845,
+    "f1_macro": 0.997321099519185,
+    "f1_weighted": 0.99732110469139,
+    "per_class_precision": [
+      0.9960314402404253,
+      0.9986118073497089
+    ],
+    "per_class_recall": [
+      0.9986093405956658,
+      0.9960384615384615
+    ],
+    "per_class_f1": [
+      0.9973187245616404,
+      0.9973234744767296
+    ]
+  },
+  "best_accuracy": 0.9973981922254129,
+  "rounds": 50
+}

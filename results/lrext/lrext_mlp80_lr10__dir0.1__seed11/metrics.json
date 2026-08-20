@@ -1,0 +1,37 @@
+{
+  "run_id": "lrext_mlp80_lr10__dir0.1__seed11",
+  "seed": 11,
+  "device": "cpu",
+  "model_name": "mlp",
+  "model_hidden": [
+    80
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "fedavg",
+  "n_params": 3362,
+  "bytes_per_round_uplink": 13448,
+  "total_uplink_bytes": 6724000,
+  "final_metrics": {
+    "accuracy": 0.6139880895021874,
+    "f1_macro": 0.5455947578939947,
+    "f1_weighted": 0.545978684693385,
+    "per_class_precision": [
+      0.9989778534923339,
+      0.5648781971879957
+    ],
+    "per_class_recall": [
+      0.22652296519488546,
+      0.9997692307692307
+    ],
+    "per_class_f1": [
+      0.3693044053279592,
+      0.7218851104600302
+    ]
+  },
+  "best_accuracy": 0.8746506832154489,
+  "rounds": 50
+}

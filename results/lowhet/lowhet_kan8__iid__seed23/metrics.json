@@ -1,0 +1,37 @@
+{
+  "run_id": "lowhet_kan8__iid__seed23",
+  "seed": 23,
+  "device": "cpu",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "iid",
+  "data_alpha": 0.1,
+  "algo": "fedavg",
+  "n_params": 3280,
+  "bytes_per_round_uplink": 15376,
+  "total_uplink_bytes": 7688000,
+  "final_metrics": {
+    "accuracy": 0.9757550060708848,
+    "f1_macro": 0.9757445170320549,
+    "f1_weighted": 0.9757434185506946,
+    "per_class_precision": [
+      0.9547619926880608,
+      0.9986697839406643
+    ],
+    "per_class_recall": [
+      0.9987252288793603,
+      0.9528846153846153
+    ],
+    "per_class_f1": [
+      0.9762489143979156,
+      0.9752401196661943
+    ]
+  },
+  "best_accuracy": 0.9757550060708848,
+  "rounds": 50
+}

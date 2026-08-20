@@ -1,0 +1,37 @@
+{
+  "run_id": "lrsweep_kan8_lr0p01__dir0.1__seed114",
+  "seed": 114,
+  "device": "cpu",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "fedavg",
+  "n_params": 3280,
+  "bytes_per_round_uplink": 15376,
+  "total_uplink_bytes": 7688000,
+  "final_metrics": {
+    "accuracy": 0.9711295700271745,
+    "f1_macro": 0.9711123998256392,
+    "f1_weighted": 0.9711108660447907,
+    "per_class_precision": [
+      0.9472583898771318,
+      0.9975631549021201
+    ],
+    "per_class_recall": [
+      0.9976822343261096,
+      0.9446923076923077
+    ],
+    "per_class_f1": [
+      0.9718166767007826,
+      0.9704081229504958
+    ]
+  },
+  "best_accuracy": 0.9716884768824561,
+  "rounds": 50
+}
