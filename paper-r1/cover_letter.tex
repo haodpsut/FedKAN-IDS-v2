@@ -65,8 +65,12 @@ points across all four architectures, which is larger than one of the effects we
 as significant. Every accuracy in the revised manuscript is the mean over the final five
 rounds, and we state the estimator explicitly.
 
-\textbf{Single-machine re-run.} Every experiment in this revision, including those that
-appeared in the submitted version, was re-run on one machine. The submitted numbers came
+\textbf{Single-machine re-run.} Every table in the revised manuscript is now generated from
+runs executed on one machine. The headline accuracy table and its last-round companion were
+regenerated from scratch rather than carried over, because the submitted version's figures came
+from an RTX~4090 while the new experiments ran on CPU, and a table mixing the two would not
+support the comparisons we draw from it. The generating script prints the device of every run it
+reads and refuses to proceed silently if more than one appears. The submitted numbers came
 from an RTX~4090 and a mixture of hardware would have made the new and old numbers
 incomparable. We also report inference and training cost on that hardware, which speaks to
 the deployment questions both reviewers raised.
@@ -76,8 +80,8 @@ text is highlighted. We should be straightforward about one limitation. Where a 
 rewritten rather than edited, an automatic comparison cannot always place the deleted text
 in context, so parts of what was removed do not appear in the marked-up copy at all. We
 measured this rather than leave it implicit: of the previous manuscript's body sentences,
-$33.5\%$ are gone and $55.3\%$ of the present one is new, but the automatic comparison marks
-only $56\%$ of the new sentences and $47\%$ of the deleted ones. The blue marking is reliable
+$34.6\%$ are gone and $55.4\%$ of the present one is new, but the automatic comparison marks
+only $57\%$ of the new sentences and $45\%$ of the deleted ones. The blue marking is reliable
 where it appears; its absence does not mean a passage is unchanged. We therefore list the
 substantive deletions explicitly in the response letter rather than leaving the reader to
 infer them from the markup.

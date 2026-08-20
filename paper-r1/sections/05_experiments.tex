@@ -18,7 +18,7 @@ Implementation follows \cite{hsu2019measuring}.
 
 \subsection{Architectures}
 
-We compare four parameter-budgeted variants summarised in Table~\ref{tab:headline_botiot}:
+We compare four parameter-budgeted variants summarised in Table~\ref{tab:headline_r1}:
 \begin{itemize}
     \item \textbf{FedAvg-MLP (32h)}: $n_h^{\text{MLP}} = 32$, $\sim 1.3$k parameters. CITA-style baseline.
     \item \textbf{FedAvg-MLP-PM (80h)}: $n_h^{\text{MLP}} = 80$, $\sim 3.4$k parameters. Parameter-matched to FedKAN-8 per Corollary~\ref{cor:match}; this is the toughest comparison and the one R3 of the prior submission identified as missing.
@@ -30,7 +30,8 @@ All experiments use $n = 10$ seeds in the Dirichlet $\alpha = 0.1$ cells (the ce
 
 \subsection{Headline Result}\label{subsec:headline}
 
-\input{results/tables/headline_botiot.tex}
+\input{results/tables/headline_r1.tex}
+\input{results/tables/lastround_r1.tex}
 
 \input{results/tables/worst_seed_botiot.tex}
 
@@ -43,7 +44,7 @@ All experiments use $n = 10$ seeds in the Dirichlet $\alpha = 0.1$ cells (the ce
 \label{fig:conv-binary}
 \end{figure*}
 
-The headline observations on NF-BoT-IoT-v2 binary detection are illustrated in Fig.~\ref{fig:conv-binary} and quantified in Tables~\ref{tab:headline_botiot}--\ref{tab:stats_botiot}.
+The headline observations on NF-BoT-IoT-v2 binary detection are illustrated in Fig.~\ref{fig:conv-binary} and quantified in Tables~\ref{tab:headline_r1}--\ref{tab:stats_botiot}.
 
 \textbf{Observation 1 (without heterogeneity the parameter-matched MLP is ahead).} Under IID
 partitioning the four variants do \emph{not} converge to a common value: FedKAN-8 reaches
@@ -53,7 +54,7 @@ value is $97.45\%$, so the parameter-matched MLP leads the KAN by $2.20$~pp. Und
 heterogeneity (Dir $\alpha=1.0$) the ordering is the same with a smaller spread of $1.38$~pp.
 The first version of this manuscript described this cell as ``all four variants converge within
 $0.05$ percentage points of each other ($\geq 99.6\%$)''. That statement is not supported by the
-data in Table~\ref{tab:headline_botiot} and we withdraw it; the cell is not saturated, and what
+data in Table~\ref{tab:headline_r1} and we withdraw it; the cell is not saturated, and what
 it shows is a clean disadvantage for the KAN at parameter parity when clients are homogeneous.
 These IID and $\alpha=1.0$ cells were run with $n=3$ seeds rather than the $n=10$ used for the
 $\alpha=0.1$ cells, and we say so at every table rather than reporting a single seed count for
@@ -184,25 +185,24 @@ questions; we list them rather than let a single figure stand in for all three.}
 \label{tab:runaccount}
 \centering
 \footnotesize
-\begin{tabular}{@{}lrl@{}}
+\begin{tabular}{@{}lr@{}}
 \toprule
-Group & Runs & Used for \\
+Group & Runs \\
 \midrule
-Learning-rate sweep, NF-BoT-IoT-v2   & $480$ & Sec.~\ref{sec:lrsweep} \\
-\quad (incl.\ 20 held-out seeds)     &       & \\
-Learning-rate sweep, NF-ToN-IoT-v2   & $240$ & Sec.~\ref{sec:lrsweep} \\
-Learning-rate sweep, NF-CSE-CIC bin. & $240$ & Sec.~\ref{sec:lrsweep} \\
-Learning-rate sweep, NF-CSE-CIC mc.  & $240$ & Sec.~\ref{sec:lrsweep} \\
-IID and Dir $\alpha{=}1.0$ cells     & $80$  & Observation~1 \\
-Extended grid $\eta \in \{0.3, 1.0\}$& $40$  & Sec.~\ref{sec:lrsweep} \\
-Aggregation and compression baselines& $80$  & Sec.~\ref{sec:algos} \\
-Sensitivity: $G$, order, width       & $80$  & Sec.~\ref{sec:lrsweep} \\
-$G{=}10$ on two datasets             & $20$  & Sec.~\ref{sec:lrsweep} \\
+$\eta$ sweep, BoT-IoT (incl.\ 20 held-out seeds) & $480$ \\
+$\eta$ sweep, ToN-IoT                            & $240$ \\
+$\eta$ sweep, CSE-CIC binary                     & $240$ \\
+$\eta$ sweep, CSE-CIC multi-class                & $240$ \\
+IID and Dir $\alpha{=}1.0$ cells                 & $80$ \\
+Extended grid $\eta \in \{0.3, 1.0\}$            & $40$ \\
+Aggregation and compression baselines            & $80$ \\
+Sensitivity: $G$, spline order, width            & $80$ \\
+$G{=}10$ on two datasets                         & $20$ \\
 \midrule
-\textbf{Runs the reported numbers rest on} & $\mathbf{1{,}500}$ & \\
-Mis-configured multi-class cell, retained and labelled & $240$ & none \\
-\textbf{Total run for this revision} & $\mathbf{1{,}740}$ & \\
-Runs from the original submission (different hardware) & $310$ & none \\
+\textbf{Runs the reported numbers rest on}       & $\mathbf{1{,}500}$ \\
+Mis-configured cell, retained and labelled       & $240$ \\
+\textbf{Total run for this revision}             & $\mathbf{1{,}740}$ \\
+Original submission, different hardware          & $310$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -290,16 +290,16 @@ and there the gap is unchanged; that this holds on some cells and not others is 
 it cannot be reported as an architectural property.
 
 \begin{table}[t]
-\caption{Spread of accuracy across the learning-rate grid, in percentage points. The narrow
-band is one decade around the shared value; the full grid is the two and a half decades we
-swept. Which architecture looks more robust \emph{depends on the band}, so we report both.}
+\caption{Spread of accuracy across the learning-rate grid, in percentage points. Narrow band is
+$[3\!\times\!10^{-3},3\!\times\!10^{-2}]$, one decade around the shared value; full grid is
+$[3\!\times\!10^{-4},10^{-1}]$. Which architecture looks more robust \emph{depends on the band},
+so we report both.}
 \label{tab:lrrobust}
 \centering
 \footnotesize
 \begin{tabular}{@{}lcccc@{}}
 \toprule
-& \multicolumn{2}{c}{narrow $[3\!\times\!10^{-3},3\!\times\!10^{-2}]$}
-& \multicolumn{2}{c}{full $[3\!\times\!10^{-4},10^{-1}]$} \\
+& \multicolumn{2}{c}{narrow band} & \multicolumn{2}{c}{full grid} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
 Cell & KAN-8 & MLP-80 & KAN-8 & MLP-80 \\
 \midrule
@@ -407,11 +407,11 @@ soften: FedKAN-8 reaches $93.85\%$ and the MLP $95.72\%$, a difference of $-1.87
 \footnotesize
 \begin{tabular}{@{}lccc@{}}
 \toprule
-Configuration & KAN-8 & MLP-PM-80 & $\Delta$ \\
+Configuration & KAN-8 & MLP-80 & $\Delta$ \\
 \midrule
-FedAvg, shared $\eta=10^{-2}$ (as submitted) & $94.22$ & $88.72$ & $+5.49$ \\
-FedProx, shared $\eta=10^{-2}$               & $94.65$ & $94.92$ & $-0.26$ \\
-FedProx, each at its own $\eta$              & $93.85$ & $\mathbf{95.72}$ & $\mathbf{-1.87}$ \\
+FedAvg, shared $\eta$ (as submitted) & $94.22$ & $88.72$ & $+5.49$ \\
+FedProx, shared $\eta$               & $94.65$ & $94.92$ & $-0.26$ \\
+FedProx, own $\eta$ each             & $93.85$ & $\mathbf{95.72}$ & $\mathbf{-1.87}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
