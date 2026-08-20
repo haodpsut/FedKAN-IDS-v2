@@ -35,6 +35,7 @@ python scripts/make_latex_tables.py >/dev/null
 # --- Vong R1 (08/2026). Bang cu o tren sinh tu results/runs (RTX 4090); nhung
 # cai duoi day sinh tu run tren MOT may CPU. Truoc 20/08 script nay khong goi
 # cai nao trong so chung, nen cau "regenerates every table" trong bai la SAI.
+# lr_sweep.py KHONG goi o day: no CHAY thi nghiem, viec do thuoc run_all_local.sh.
 echo "[R1] bang headline tu run mot may"
 python scripts/make_tables_r1.py 2>&1 | tail -3
 echo "[R1] phan tich sweep learning rate (4 o)"
@@ -51,6 +52,12 @@ echo "[R1] chi phi truyen: byte toi dich"
 python scripts/comm_cost.py 2>&1 | tail -4
 echo "[R1] phap y phan hoach seed 17"
 python scripts/seed17_forensics.py --config configs/experiments/e1_toniot.yaml --mode binary 2>&1 | tail -4
+echo "[R1] pho Hessian tai nghiem (R2#6)"
+python3 scripts/hessian_spectrum.py || true
+echo "[R1] do nhay theo G / bac spline / do rong (R2#5)"
+python3 scripts/sensitivity_grid.py || true
+echo "[R1] TRUY SO cho 7 bang GO TAY trong bai"
+python3 scripts/verify_handtyped_tables.py || true
 echo "[R1] bang nguon cho cong truy so"
 python scripts/emit_claims_csv.py 2>&1 | tail -2
 
