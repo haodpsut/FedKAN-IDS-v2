@@ -1,0 +1,67 @@
+[
+  {
+    "id": "headline_nested",
+    "paper_value": "-0.542",
+    "source": "results/lrsweep_botiot",
+    "aggregation": "mean over 20 held-out seeds",
+    "protocol": {
+      "summary_stat": "mean_last5",
+      "selection": "tuned_on_10_old_reported_on_20_new",
+      "unit": "seed_pair",
+      "window": "full_grid_6_values"
+    },
+    "headline": true
+  },
+  {
+    "id": "headline_shared_lr",
+    "paper_value": "5.494",
+    "source": "results/lrsweep_botiot",
+    "aggregation": "mean over 10 seeds",
+    "protocol": {
+      "summary_stat": "mean_last5",
+      "selection": "shared_eta_1e-2",
+      "unit": "seed_pair",
+      "window": "full_grid_6_values"
+    },
+    "headline": true
+  },
+  {
+    "id": "headline_tune_report_same",
+    "paper_value": "0.761",
+    "source": "results/lrsweep_botiot",
+    "aggregation": "mean over 10 seeds",
+    "protocol": {
+      "summary_stat": "mean_last5",
+      "selection": "tuned_and_reported_on_same_10",
+      "unit": "seed_pair",
+      "window": "full_grid_6_values"
+    },
+    "headline": true
+  },
+  {
+    "id": "iid_gap",
+    "paper_value": "-2.060",
+    "source": "results/lowhet",
+    "aggregation": "mean over 10 seeds",
+    "protocol": {
+      "summary_stat": "mean_last5",
+      "selection": "shared_eta_1e-2",
+      "unit": "seed_pair",
+      "window": "single_value"
+    },
+    "headline": true
+  },
+  {
+    "id": "dir1_gap",
+    "paper_value": "-1.258",
+    "source": "results/lowhet",
+    "aggregation": "mean over 10 seeds",
+    "protocol": {
+      "summary_stat": "mean_last5",
+      "selection": "shared_eta_1e-2",
+      "unit": "seed_pair",
+      "window": "single_value"
+    },
+    "headline": true
+  }
+]

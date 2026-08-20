@@ -137,7 +137,7 @@ The FedKAN-IDS pipeline alternates between four stages per communication round, 
   at (3.0,-2.4)
   {SiLU residual base $\sigma$\;\,+\,\;order-$k$ B-spline expansion on $G$ grid points};
 \end{tikzpicture}
-\caption{Sub-flow: structure of one KAN layer producing hidden unit $h_q$ from input vector $\mathbf{x}\in\mathbb{R}^d$. Each edge $(p,q)$ carries an independent learnable activation $\phi_{p,q}$ parameterised as a SiLU residual base plus a B-spline expansion on a uniform grid of $G$ points (order $k$). The full client model stacks an input layer ($d \to n_h$) and an output layer ($n_h \to c$). The B-spline coefficients $c_{p,q,i}$ have local support, which is the key structural property exploited by Theorem~\ref{thm:conv}.}
+\caption{Sub-flow: structure of one KAN layer producing hidden unit $h_q$ from input vector $\mathbf{x}\in\mathbb{R}^d$. Each edge $(p,q)$ carries an independent learnable activation $\phi_{p,q}$ parameterised as a SiLU residual base plus a B-spline expansion on a uniform grid of $G$ points (order $k$). The full client model stacks an input layer ($d \to n_h$) and an output layer ($n_h \to c$). The B-spline coefficients $c_{p,q,i}$ have local support.}
 \label{fig:kan-arch}
 \end{figure}
 
@@ -203,7 +203,7 @@ The server runs a synchronous Federated Averaging loop adapted to the three KAN 
 
 Each client runs $E$ local epochs of mini-batch SGD or Adam on its private $\mathcal{D}_k$ before returning the updated parameter triple to the server. Backpropagation through a KAN layer is straightforward: $\partial \phi_{q,p}/\partial w^{(b)}_{q,p} = \sigma(x_p)$, $\partial \phi_{q,p}/\partial w^{(s)}_{q,p} = \sum_i c_{q,p,i} B_i(x_p)$, and $\partial \phi_{q,p}/\partial c_{q,p,i} = w^{(s)}_{q,p} B_i(x_p)$, all of which are computed automatically by modern autodiff frameworks.
 
-In our implementation we use the open-source \texttt{efficient\_kan} library, which fuses the spline-coefficient lookup into a single contiguous matrix multiplication and reduces the constant factor in the per-edge forward cost relative to a naive double-summation implementation. The full pipeline (data partitioning, FedAvg server, KAN client) is released as the open-source repository accompanying this work; configurations and run-level metrics for all $1{,}460$ experimental runs reported in Section~\ref{sec:experiments} are committed to that repository.
+In our implementation we use the open-source \texttt{efficient\_kan} library, which fuses the spline-coefficient lookup into a single contiguous matrix multiplication and reduces the constant factor in the per-edge forward cost relative to a naive double-summation implementation. The full pipeline (data partitioning, FedAvg server, KAN client) is released as the open-source repository accompanying this work; configurations and run-level metrics for all $1{,}740$ experimental runs of this revision, including $240$ from a mis-configured cell that we retain and label rather than delete reported in Section~\ref{sec:experiments} are committed to that repository.
 
 \subsection{Computational and Communication Footprint}\label{subsec:cost}
 

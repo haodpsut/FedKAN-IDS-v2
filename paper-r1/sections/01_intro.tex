@@ -22,14 +22,21 @@ $+5.49$ to $+0.76$~pp ($p=0.74$, paired over ten seeds). The same sweep on three
 cells puts the advantage between $-0.49$ and $+6.23$~pp with no consistent sign, so the
 effect is a property of the dataset, not of the architecture.
 
-\textbf{Theoretical anchoring.} We provide a convergence analysis (Theorem~\ref{thm:conv}) showing that the FedKAN error decomposes into a standard FedAvg term proportional to the data-heterogeneity factor $\Gamma_\alpha$ \emph{plus} an additive spline-approximation bias of order $\mathcal{O}(G^{-(k+1)})$. Crucially, the spline-bias term is independent of $\Gamma_\alpha$, behaving as an effective regulariser whose relative impact \emph{decreases} as heterogeneity grows. Empirically, this manifests as the smaller cross-seed variance we report.
+\textbf{What the convergence analysis does and does not give.} We retain a convergence
+analysis (Theorem~\ref{thm:conv}) showing that the FedKAN error decomposes into a standard
+FedAvg term proportional to the heterogeneity factor $\Gamma_\alpha$ plus an additive
+spline-approximation bias of order $\mathcal{O}(G^{-(k+1)})$ that does not scale with
+$\Gamma_\alpha$. We are explicit about its limits, because the first version of this paper was
+not. The bound is stated for the KAN alone, with no counterpart derived for the MLP, so it
+cannot support a comparison in either direction; and its spline term is non-negative, which if
+anything predicts a worse optimisation floor for the KAN rather than a better one. It is not
+cited anywhere in this paper as evidence for an architectural advantage.
 
 \textbf{Contributions.}
 \begin{itemize}
 \item \textbf{A negative result with a cause.} We show that the KAN-versus-MLP gap reported
 for federated intrusion detection is largely a tuning artefact, and we quantify it: on the
-cell that produced our own headline number, tuning the baseline removes $5.39$ of the
-$5.49$~pp gap. We also show the companion variance-reduction claim reverses sign on two of
+cell that produced our own headline number, tuning the baseline removes $5.39$ of the $5.49$~pp gap, and a nested protocol that selects the rate on ten seeds and reports on twenty unseen ones puts the difference at $-0.54$~pp ($p=0.58$). We also show the companion variance-reduction claim reverses sign on two of
 four cells.
 \item \textbf{A property that does generalise.} Across all three datasets, KAN is markedly
 less sensitive to the learning rate than the parameter-matched MLP, losing at most
@@ -42,7 +49,7 @@ parity, and a paper that matches parameters has not thereby matched cost.
 \item \textbf{A comparison protocol and the runs behind it.} Per-architecture learning-rate
 tuning, accuracy summarised over the final five rounds rather than the last round alone, and
 an explicit test of how far each conclusion moves when the summary statistic changes. All
-$1{,}280$ runs, all configurations and the analysis scripts are released.
+$1{,}500$ runs, all configurations and the analysis scripts are released.
 \end{itemize}
 
 \textbf{Organisation.} Section~\ref{sec:prelim} introduces the KAN layer formalism and the federated IDS optimisation problem. Section~\ref{sec:method} details the FedKAN-IDS framework, including server and client algorithms. Section~\ref{sec:theory} presents the four formal results that anchor our empirical narrative. Section~\ref{sec:experiments} reports experimental protocol and results across architectures, partitions, and modes. Section~\ref{sec:conclusion} discusses threats to validity and outlines next steps.

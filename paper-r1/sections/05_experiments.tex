@@ -39,13 +39,31 @@ All experiments use $n = 10$ seeds in the Dirichlet $\alpha = 0.1$ cells (the ce
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.96\textwidth]{convergence_binary_grid.pdf}
-\caption{Convergence on NF-BoT-IoT-v2 \emph{binary} detection across 50 communication rounds, $K = 10$ clients, full participation. Solid lines are seed-mean accuracy ($n = 10$ for Dir $\alpha = 0.1$, $n = 3$ for IID and Dir $\alpha = 1.0$); shaded bands are $\pm 1$ standard deviation. Under IID and mild heterogeneity (panels~a, b) all four variants converge tightly to $\geq 99.6\%$. Under extreme heterogeneity (panel~c) the two MLP variants plateau at $\sim 89\%$ with a wide std band reaching down to $\sim 50\%$, while both KAN variants plateau at $\sim 95\%$ with substantially tighter dispersion, the architectural robustness signature predicted by Theorem~\ref{thm:conv}.}
+\caption{Convergence on NF-BoT-IoT-v2 \emph{binary} detection across 50 communication rounds, $K = 10$ clients, full participation. Solid lines are seed-mean accuracy ($n = 10$ for Dir $\alpha = 0.1$, $n = 3$ for IID and Dir $\alpha = 1.0$); shaded bands are $\pm 1$ standard deviation. Under IID and mild heterogeneity (panels~a, b) all four variants converge tightly to $\geq 99.6\%$. Under extreme heterogeneity (panel~c) the two MLP variants plateau at $\sim 89\%$ with a wide std band reaching down to $\sim 50\%$, while both KAN variants plateau at $\sim 95\%$ with tighter dispersion. This holds at the shared $\eta=10^{-2}$ of the original protocol; Section~\ref{sec:lrsweep} shows it does not survive per-architecture tuning.}
 \label{fig:conv-binary}
 \end{figure*}
 
 The headline observations on NF-BoT-IoT-v2 binary detection are illustrated in Fig.~\ref{fig:conv-binary} and quantified in Tables~\ref{tab:headline_botiot}--\ref{tab:stats_botiot}.
 
-\textbf{Observation 1 (saturated regime).} Under IID and mildly heterogeneous (Dir $\alpha = 1.0$) settings, all four variants converge within 0.05 percentage points of each other ($\geq 99.6\%$ accuracy across the board). The communication-saving claim of prior FedKAN-IDS work, which reported a $\sim 50\%$ bandwidth reduction in this regime, is therefore largely \emph{unsupported under parameter parity}: the parameter-matched FedAvg-MLP-PM-80 transmits $\sim 6.6$~MB total while FedKAN-8 transmits $\sim 7.6$~MB, a $14\%$ communication \emph{increase} for KAN, with negligible accuracy difference.
+\textbf{Observation 1 (without heterogeneity the parameter-matched MLP is ahead).} Under IID
+partitioning the four variants do \emph{not} converge to a common value: FedKAN-8 reaches
+$97.53\%$ and FedKAN-16 $97.56\%$, while FedAvg-MLP-32 reaches $99.00\%$ and the
+parameter-matched FedAvg-MLP-PM-80 reaches $99.73\%$. The spread is $2.29$~pp and the lowest
+value is $97.45\%$, so the parameter-matched MLP leads the KAN by $2.20$~pp. Under mild
+heterogeneity (Dir $\alpha=1.0$) the ordering is the same with a smaller spread of $1.38$~pp.
+The first version of this manuscript described this cell as ``all four variants converge within
+$0.05$ percentage points of each other ($\geq 99.6\%$)''. That statement is not supported by the
+data in Table~\ref{tab:headline_botiot} and we withdraw it; the cell is not saturated, and what
+it shows is a clean disadvantage for the KAN at parameter parity when clients are homogeneous.
+These IID and $\alpha=1.0$ cells were run with $n=3$ seeds rather than the $n=10$ used for the
+$\alpha=0.1$ cells, and we say so at every table rather than reporting a single seed count for
+the study.
+
+On communication in the same cell, the parameter-matched MLP transmits $6.72$~MB in total and
+FedKAN-8 transmits $7.69$~MB, an increase of $14.4\%$ for the KAN. The claim of
+$\sim 50\%$ bandwidth reduction in earlier FedKAN-IDS work is therefore unsupported under
+parameter parity, and the direction is reversed. Section~\ref{sec:theory} explains where the
+excess comes from, and it is not where our own Proposition~\ref{prop:comm} put it.
 
 \textbf{Observation 2 (catastrophic MLP collapse).} Under extreme heterogeneity (Dir $\alpha = 0.1$), the worst-seed accuracy of FedKAN-8 is $80.7\%$, while the parameter-matched FedAvg-MLP-PM-80 collapses to $56.5\%$ on its worst seed (Table~\ref{tab:worst_seed_botiot}). Both smaller and larger MLPs fail at this regime: the smaller MLP-32 (1.3k params) reaches $60.4\%$ worst-seed and the parameter-matched MLP-PM-80 (3.4k params) reaches $56.5\%$. Increasing MLP capacity by $2.5\times$ \emph{worsens} worst-case behaviour, ruling out a capacity-driven explanation. Both KAN variants achieve worst-seed $\geq 80.7\%$.
 
@@ -140,19 +158,69 @@ costs roughly ten times the training time of $G=5$. We therefore present $G=10$ 
 favourable trade in mean accuracy and false-positive rate that must be paid for in parameters
 and compute, not as a remedy for the failure mode.
 
-\textbf{Class-distribution skew predicts which advantage manifests.} The three datasets span a clear gradient in attack-class skew:
-\begin{itemize}
-\item \textbf{NF-BoT-IoT-v2 (high skew)}: two attack classes (DDoS, DoS) together dominate $\sim 95\%$ of flows. A Dirichlet $\alpha = 0.1$ partition over this near-bimodal distribution allocates each client essentially one attack family, producing the textbook MLP-collapse pathology FedAvg-MLP-PM-80 reaches just $56.5\%$ on its worst seed. FedKAN's mean advantage is $+6.00$~pp and its worst-seed advantage is $+24.24$~pp.
-\item \textbf{NF-CSE-CIC-IDS2018-v2 (moderate skew)}: $14$ attack categories give a richer per-client mix at $\alpha = 0.1$. The MLP-PM-80 worst-seed accuracy rises to $93.15\%$; FedKAN's mean advantage shrinks to $+1.70$~pp and worst-seed advantage to $+2.73$~pp, but the direction is preserved on every seed.
-\item \textbf{NF-ToN-IoT-v2 (intermediate, mixed-effect)}: $9$ moderately-balanced attack types. KAN retains its $+5.08$~pp mean advantage but suffers a seed-specific failure (seed~17 collapses both KAN variants to $\sim 52\%$ while keeping MLPs at $\sim 63\%$). The worst-seed direction inverts to $-11$~pp.
-\end{itemize}
+\textbf{A skew gradient we can no longer claim.} The first version of this manuscript ordered
+the three datasets by attack-class skew and argued that the skew level predicts which advantage
+appears. We withdraw that narrative for two reasons, and state them because the bullets it rested
+on are still worth correcting.
+
+First, the numbers in that passage did not match our own tables. It reported a $+1.70$~pp mean
+and $+2.73$~pp worst-seed advantage for NF-CSE-CIC-IDS2018-v2 with the direction ``preserved on
+every seed''. The binary cell for that dataset gives $-0.49$~pp mean and $-21.23$~pp worst-seed:
+the figures quoted were from the multi-class cell and were attached to the binary discussion. The
+same passage also labelled that dataset's skew inconsistently across paragraphs.
+
+Second, and decisively, the gradient does not survive the tuning correction. With each
+architecture at its own step size the four cells give $+0.76$, $+6.23$, $+1.12$ and $+1.38$~pp,
+and on the headline cell under a held-out protocol the difference is $-0.54$~pp. An ordering that
+is not stable under a change of learning rate is not an ordering by class skew. Three datasets
+cannot establish a monotone relationship in any case, as Reviewer~1 noted of the first version.
+
+What the datasets do differ in is where each architecture's usable step size lies, and that we
+report directly in Table~\ref{tab:lrsweep} rather than through a proxy.
+
+\begin{table}[t]
+\caption{Run accounting. Three totals appear in this paper because they answer three different
+questions; we list them rather than let a single figure stand in for all three.}
+\label{tab:runaccount}
+\centering
+\footnotesize
+\begin{tabular}{@{}lrl@{}}
+\toprule
+Group & Runs & Used for \\
+\midrule
+Learning-rate sweep, NF-BoT-IoT-v2   & $480$ & Sec.~\ref{sec:lrsweep} \\
+\quad (incl.\ 20 held-out seeds)     &       & \\
+Learning-rate sweep, NF-ToN-IoT-v2   & $240$ & Sec.~\ref{sec:lrsweep} \\
+Learning-rate sweep, NF-CSE-CIC bin. & $240$ & Sec.~\ref{sec:lrsweep} \\
+Learning-rate sweep, NF-CSE-CIC mc.  & $240$ & Sec.~\ref{sec:lrsweep} \\
+IID and Dir $\alpha{=}1.0$ cells     & $80$  & Observation~1 \\
+Extended grid $\eta \in \{0.3, 1.0\}$& $40$  & Sec.~\ref{sec:lrsweep} \\
+Aggregation and compression baselines& $80$  & Sec.~\ref{sec:algos} \\
+Sensitivity: $G$, order, width       & $80$  & Sec.~\ref{sec:lrsweep} \\
+$G{=}10$ on two datasets             & $20$  & Sec.~\ref{sec:lrsweep} \\
+\midrule
+\textbf{Runs the reported numbers rest on} & $\mathbf{1{,}500}$ & \\
+Mis-configured multi-class cell, retained and labelled & $240$ & none \\
+\textbf{Total run for this revision} & $\mathbf{1{,}740}$ & \\
+Runs from the original submission (different hardware) & $310$ & none \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{On the mis-configured cell.} While sweeping the multi-class cell we inherited
+\texttt{downsample\_per\_class}${=}130{,}000$ from the binary configuration, where the submitted
+study used $50{,}000$. That is a different experiment, and it gives $-1.24$~pp where the correct
+configuration gives $+1.38$~pp, so the two are not interchangeable. We kept those $240$ runs in
+the artifact under a directory that says so rather than deleting them, both because the raw
+record is the evidence and because the discrepancy is itself a datum: the multi-class advantage
+may shrink with more data per class, which we have not tested properly and do not claim.
 
 \subsection{Learning-rate sensitivity, and what it does to the comparison}\label{sec:lrsweep}
 
 Reviewer feedback on the first version asked whether the optimiser step size had been tuned
 per architecture. It had not: a single $\eta=10^{-2}$ was used for every model. We therefore
 swept $\eta \in \{3\!\times\!10^{-4}, 10^{-3}, 3\!\times\!10^{-3}, 10^{-2}, 3\!\times\!10^{-2},
-10^{-1}\}$ for all four architectures, on all ten seeds, on all four cells: $1{,}280$ runs on
+10^{-1}\}$ for all four architectures, on all ten seeds, on all four cells: $1{,}200$ runs on
 a single machine. Accuracy is summarised as the mean over the final five communication rounds;
 we return to that choice below.
 
@@ -174,6 +242,44 @@ NF-CSE-CIC (multi.)       & $+1.38$ & $+1.38$ & $0.87$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\textbf{Selecting the rate without looking at the evaluation seeds.} Tuning on the same seeds
+that are then reported is optimistic, and a reviewer of an earlier draft was right to say so. We
+therefore re-ran the headline cell with twenty additional seeds, fixed in advance
+($101$--$120$), and applied a nested protocol: select each architecture's rate on the original
+ten seeds, lock it, and report on the twenty that were never seen during selection. The selected
+rates are $3\times10^{-3}$ for FedKAN-8 and $10^{-1}$ for the parameter-matched MLP.
+
+\begin{table}[t]
+\caption{The same quantity under four protocols. Only the last selects the learning rate
+without seeing the seeds it reports on.}
+\label{tab:protocols}
+\centering
+\footnotesize
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Protocol & $\Delta$ (pp) & $p$ \\
+\midrule
+Shared $\eta=10^{-2}$, as submitted            & $+5.49$ & $0.19$ \\
+Tune and report on the same ten seeds          & $+0.76$ & $0.74$ \\
+Tune on four seeds, report on six              & $+6.12$ & $0.41$ \\
+\textbf{Tune on ten, report on twenty unseen}  & $\mathbf{-0.54}$ & $\mathbf{0.58}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+On the twenty held-out seeds the difference is $-0.54$~pp with a bootstrap $95\%$ interval of
+$[-2.49,+1.20]$ and FedKAN-8 ahead on six of twenty pairs. The interval straddles zero almost
+symmetrically: once both architectures are given their own step size and evaluated on data that
+played no part in choosing it, there is no measurable difference between them on the cell that
+produced our headline number.
+
+Table~\ref{tab:protocols} is the reason we report the protocol rather than a single figure. The
+same comparison, on the same runs, yields $+6.12$, $+5.49$, $+0.76$ or $-0.54$~pp depending on
+how the step size is chosen and which seeds are reported. Three of those four are defensible in
+isolation and only the last is free of the objection that the tuning decision saw the evaluation
+data. A literature that reports the first number and omits the protocol is not reporting a
+property of the architecture.
 
 \textbf{Tuning the baseline, not the method, is what moves the number.} On NF-BoT-IoT-v2 the
 parameter-matched MLP's best step size is $10^{-1}$, ten times the shared value, and moving to
@@ -285,14 +391,37 @@ SCAFFOLD & MLP-80 & \multicolumn{3}{l}{did not converge, see text} \\
 \end{tabular}
 \end{table}
 
-\textbf{FedProx closes the gap, and reverses its sign.} It lifts the parameter-matched MLP by
-$6.19$~pp and cuts its seed variance from $14.21$ to $2.67$~pp, while lifting FedKAN-8 by
-$0.44$~pp. Under FedProx the difference is $-0.26$~pp in the KAN's disfavour ($p=0.82$). The
-submitted comparison therefore under-served its baseline in two independent ways, a shared
-learning rate and a FedAvg-only aggregator, and correcting either one alone removes most of the
-gap. MOON helps neither architecture. FedPAQ at $k=10\%$ buys a $4.7\times$ uplink reduction at
-an accuracy neither architecture can afford here: under $\alpha=0.1$ the client updates already
-disagree, and discarding nine tenths of each one compounds that.
+\textbf{FedProx closes the gap, and the two corrections compound.} FedProx lifts the
+parameter-matched MLP by $6.19$~pp and cuts its seed variance from $14.21$ to $2.67$~pp, while
+lifting FedKAN-8 by $0.44$~pp; at the shared step size the difference becomes $-0.26$~pp in the
+KAN's disfavour ($p=0.82$). A reviewer of an earlier draft pointed out that this table was
+measured at exactly the step size the rest of the paper argues against, which is a fair
+objection, so we re-ran it with each architecture at its own best rate. The conclusion does not
+soften: FedKAN-8 reaches $93.85\%$ and the MLP $95.72\%$, a difference of $-1.87$~pp
+($p=0.20$).
+
+\begin{table}[t]
+\caption{The two baseline corrections do not cancel; they compound. Ten seeds, paired.}
+\label{tab:compound}
+\centering
+\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Configuration & KAN-8 & MLP-PM-80 & $\Delta$ \\
+\midrule
+FedAvg, shared $\eta=10^{-2}$ (as submitted) & $94.22$ & $88.72$ & $+5.49$ \\
+FedProx, shared $\eta=10^{-2}$               & $94.65$ & $94.92$ & $-0.26$ \\
+FedProx, each at its own $\eta$              & $93.85$ & $\mathbf{95.72}$ & $\mathbf{-1.87}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The submitted comparison therefore under-served its baseline in two independent ways, a shared
+learning rate and a FedAvg-only aggregator. Correcting either one alone removes the gap;
+correcting both puts the parameter-matched MLP ahead. MOON helps neither architecture. FedPAQ at
+$k=10\%$ buys a $4.7\times$ uplink reduction at an accuracy neither can afford here: under
+$\alpha=0.1$ the client updates already disagree, and discarding nine tenths of each one
+compounds that.
 
 \textbf{What we do not claim.} Our SCAFFOLD implementation reaches $49.80\%$ for FedKAN-8,
 which is chance on a binary task, and $73.32\%$ for the MLP. SCAFFOLD's control variates are

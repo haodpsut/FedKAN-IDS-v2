@@ -43,33 +43,33 @@ Kolmogorov--Arnold networks (KANs) have been proposed for federated intrusion de
 the promise that, at a matched parameter budget, they are more accurate and more stable than
 multilayer perceptrons (MLPs) under client heterogeneity. We tested that promise on three
 standardised NetFlow-v2 datasets (NF-BoT-IoT-v2, NF-ToN-IoT-v2, NF-CSE-CIC-IDS2018-v2) with
-$n=10$ seeds per cell, and it does not survive contact with a controlled comparison.
+$n=10$ seeds for every cell of the controlled comparison ($n=3$ for the two auxiliary
+low-heterogeneity cells, marked as such at each table), and it does not survive that comparison.
 \textbf{(i)} The reported advantage is confounded with how much hyper-parameter tuning each
 architecture receives. Sweeping the learning rate over six values for every architecture, the
-$+5.5$~pp mean advantage we ourselves reported on NF-BoT-IoT-v2 falls to $+0.8$~pp
-($p=0.74$) once the parameter-matched MLP is given its own best learning rate, which is an
-order of magnitude away from the shared value. Across all four cells, the advantage ranges
-from $-0.5$ to $+6.2$~pp and is dataset dependent, not architectural.
-\textbf{(ii)} The variance-reduction claim does not generalise: the MLP-to-KAN seed-variance
-ratio is $2.5\times$ on one dataset but $0.71\times$, $0.33\times$ and $0.87\times$ on the
-others, that is, reversed.
-\textbf{(iii)} The two architectures have different and non-overlapping optimal step sizes:
-FedKAN-8 peaks at $3\!\times\!10^{-3}$ to $10^{-2}$ and loses $8.8$~pp at $10^{-1}$, where the
-parameter-matched MLP peaks. A step size inherited from one architecture mis-measures the
-other, which is what happened in the first version of this work and, we suspect, elsewhere.
-\textbf{(iv)} With both tuned, FedKAN-8 is ahead in all four cells by $+0.76$ to $+6.23$~pp.
-Pooled over forty seed pairs this reaches $p=0.032$, but the ten seeds within a cell are not
-independent observations about the architectures; with the cell as the unit, $n=4$ and
-$p=0.164$. The assumption-light statement is a sign test, four of four cells favouring the KAN
-at one-sided $p=0.0625$: a consistent positive direction of small magnitude, not an
-established advantage.
+$+5.49$~pp mean advantage we ourselves reported on NF-BoT-IoT-v2 falls to $+0.76$~pp when the
+parameter-matched MLP is given its own best rate. Under a nested protocol that selects the rate
+on ten seeds, locks it, and reports on twenty seeds never seen during selection, the difference
+is $-0.54$~pp ($p=0.58$, bootstrap CI $[-2.49,+1.20]$, KAN ahead on $6$ of $20$ pairs): no
+difference at all, and if anything a slight edge to the MLP.
+\textbf{(ii)} The advantage is not architectural in the other cells either. Across four cells
+it ranges from $-0.49$ to $+6.23$~pp with no consistent sign, and where clients are homogeneous
+the parameter-matched MLP is clearly ahead, by $2.06$~pp under IID partitioning and $1.26$~pp
+at Dirichlet $\alpha=1.0$.
+\textbf{(iii)} The variance-reduction claim does not generalise: the MLP-to-KAN seed-variance
+ratio is $2.53\times$ on one dataset but $0.71\times$, $0.33\times$ and $0.87\times$ on the
+others, that is, reversed, and it falls to $1.05\times$ on the first once both sides are tuned.
+\textbf{(iv)} Nor is the baseline only under-tuned in one way. Replacing FedAvg with FedProx
+lifts the parameter-matched MLP by $6.19$~pp and cuts its seed variance from $14.21$ to
+$2.67$~pp, while lifting the KAN by $0.44$~pp; under FedProx the KAN is $0.26$~pp behind.
+Correcting either the learning rate or the aggregator alone removes most of the gap.
 \textbf{(v)} It is not free either. At matched parameters on single-thread CPU, KAN inference
 costs $19.9\times$ more per sample and $37.9\times$ more per batch of $1000$; parameter parity
 is not cost parity.
 Our contribution is therefore a controlled comparison rather than a method, together with the
 protocol that makes it controlled: tune every architecture, summarise over several rounds, state
 the unit of analysis, and report how far each conclusion moves when those choices change. All
-$1{,}280$ runs are released.
+$1{,}500$ runs behind them are released.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -82,6 +82,16 @@ Federated Learning, Kolmogorov-Arnold Networks, IoT Security, Intrusion Detectio
 \input{sections/04_theory}
 \input{sections/05_experiments}
 \input{sections/06_conclusion}
+
+\section*{Acknowledgment}
+The authors used Anthropic's Claude (Opus~5) as an assistant during the revision of this
+manuscript. Its use covered three areas: drafting and editing prose in the introduction and in
+Sections~\ref{sec:experiments} and~\ref{sec:conclusion}; writing the analysis and
+experiment-orchestration scripts released with the artifact; and proposing the learning-rate
+sweep, the sensitivity grid and the Hessian-spectrum measurement reported in
+Sections~\ref{sec:theory} and~\ref{sec:experiments}. All experimental results were produced by
+executing that released code, and every number reported here was checked against the run
+records by the authors, who take full responsibility for the content of this paper.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}

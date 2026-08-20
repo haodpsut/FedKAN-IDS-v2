@@ -33,7 +33,7 @@ around what the new measurements actually support.
 \textbf{Summary of what changed.}
 \begin{itemize}[leftmargin=1.4em, itemsep=2pt]
   \item Every architecture is now tuned over a learning-rate grid before being
-        compared ($1{,}280$ runs), and all headline numbers are re-reported under that
+        compared ($1{,}200$ runs for the sweep, $1{,}500$ in total), and all headline numbers are re-reported under that
         protocol. The title, abstract and contributions changed as a result: the accuracy
         and variance claims of the first version are withdrawn, and the paper now reports a
         robustness-versus-compute trade-off.
@@ -80,6 +80,12 @@ level and the sign in fact reverses: $-0.26$~pp in the KAN's disfavour ($p=0.82$
 submitted comparison therefore under-served the baseline in two independent ways, a shared
 learning rate and a FedAvg-only aggregator, and correcting either one removes most of the gap.
 MOON gives no benefit to either architecture ($91.17\%$ and $91.14\%$, $p=0.32$ and $p=0.55$).
+
+We should add that this table was originally measured at exactly the shared step size the rest of
+the revision argues against, which would have been a fair objection. We therefore re-ran FedProx
+with each architecture at its own best rate: FedKAN-8 reaches $93.85\%$ and the MLP $95.72\%$, a
+difference of $-1.87$~pp. The two corrections compound rather than cancel, and the revised
+Table~\ref{tab:compound} reports all three configurations side by side.
 
 We must be candid about SCAFFOLD. Our implementation does not converge here: $49.80\%$ for
 FedKAN-8, which is chance on a binary task, and $73.32\%$ for the MLP. SCAFFOLD's control
@@ -261,7 +267,7 @@ tuned per architecture, and whether KANs require different learning rates.}
 \reply This comment was correct and acting on it changed the paper's central claim. The submitted
 study used $\eta=10^{-2}$ for every architecture. We swept six values spanning two and a half
 orders of magnitude, for all four architectures, on all ten seeds, on all four cells:
-$1{,}280$ runs on one machine.
+$1{,}200$ runs on one machine.
 
 The parameter-matched MLP's best step size on NF-BoT-IoT-v2 is $10^{-1}$, ten times the shared
 value. Giving it that value gains it $5.39$~pp; the same freedom gains FedKAN-8 $0.65$~pp. The

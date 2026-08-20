@@ -1,0 +1,37 @@
+{
+  "run_id": "algo_fedprox_tuned_kan8__dir0.1__seed29",
+  "seed": 29,
+  "device": "cpu",
+  "model_name": "kan",
+  "model_hidden": [
+    8
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "binary",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "fedprox",
+  "n_params": 3280,
+  "bytes_per_round_uplink": 15376,
+  "total_uplink_bytes": 7688000,
+  "final_metrics": {
+    "accuracy": 0.9077225509279782,
+    "f1_macro": 0.9076383120193742,
+    "f1_weighted": 0.9076443866822154,
+    "per_class_precision": [
+      0.9317726026275939,
+      0.8863189334887448
+    ],
+    "per_class_recall": [
+      0.8794375555298026,
+      0.9358846153846154
+    ],
+    "per_class_f1": [
+      0.9048489666136725,
+      0.9104276574250758
+    ]
+  },
+  "best_accuracy": 0.9320446354578218,
+  "rounds": 50
+}

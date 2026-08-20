@@ -1,6 +1,6 @@
 \section{Theoretical Analysis}\label{sec:theory}
 
-This section provides three formal results that anchor the empirical findings of Section \ref{sec:experiments}: a counting argument that quantifies the parameter-matching condition (Proposition \ref{prop:param}), the resulting communication-cost ratio (Proposition \ref{prop:comm}), a B-spline approximation bound specialised to NetFlow features (Lemma \ref{lem:spline}), and a convergence theorem for FedKAN under non-IID partitioning (Theorem \ref{thm:conv}). Together these results predict that the heterogeneity-amplified variance term $\Gamma_\alpha$ couples to a constant spline-bias floor $\mathcal{O}(G^{-(k+1)})$ rather than to the architectural parameters of the network, a prediction we test in Section~\ref{sec:experiments} and do not confirm: the seed-variance ratio it would imply holds on one dataset and reverses on the other three.
+This section provides four formal results that anchor the empirical findings of Section \ref{sec:experiments}: a counting argument that quantifies the parameter-matching condition (Proposition \ref{prop:param}), the resulting communication-cost ratio (Proposition \ref{prop:comm}), a B-spline approximation bound specialised to NetFlow features (Lemma \ref{lem:spline}), and a convergence theorem for FedKAN under non-IID partitioning (Theorem \ref{thm:conv}). Together these results predict that the heterogeneity-amplified variance term $\Gamma_\alpha$ couples to a constant spline-bias floor $\mathcal{O}(G^{-(k+1)})$ rather than to the architectural parameters of the network, a prediction we test in Section~\ref{sec:experiments} and do not confirm: the seed-variance ratio it would imply holds on one dataset and reverses on the other three.
 
 \subsection{Parameter Complexity}
 
@@ -40,7 +40,26 @@ For a single-hidden-layer architecture, the KAN/MLP ratio simplifies to
 \end{equation}
 \end{proposition}
 
-\noindent The ratio in \eqref{eq:comm-ratio} clarifies a misconception: KAN architectures are \emph{not} intrinsically communication-efficient. They are communication-efficient \emph{only} when the chosen $n_h^{\text{KAN}}$ is much smaller than the MLP's $n_h^{\text{MLP}}$ at matched accuracy. Under parameter parity (Corollary \ref{cor:match}), KAN's per-round communication exceeds the MLP's by roughly $(G+k+2)/(1+1/n_{\text{in}}) \approx (G+k+2)$ when $n_{\text{in}}$ is large.
+\noindent The ratio in \eqref{eq:comm-ratio} clarifies a misconception: KAN architectures are
+\emph{not} intrinsically communication-efficient. They are efficient only when the chosen
+$n_h^{\text{KAN}}$ is much smaller than the MLP's at matched accuracy. Under parameter parity
+the KAN's per-round uplink exceeds the MLP's.
+
+\textbf{A correction to this proposition, found while responding to review.} As stated,
+\eqref{eq:comm-ratio} counts learnable parameters, and for the MLP that is exactly what is
+transmitted: the measured uplink matches the formula to within $0.0\%$ for both MLP widths.
+For the KAN it does not. FedKAN-8 transmits $153{,}760$~B per round across ten clients where
+the proposition predicts $131{,}200$~B, an excess of $17.2\%$; FedKAN-16 shows $10.1\%$. The
+excess is not noise and not an implementation defect: a KAN layer's \texttt{state\_dict}
+carries its B-spline knot vector as a buffer, $468$ and $96$ scalars for the two layers of
+FedKAN-8, which is $564$ non-learnable values against $3{,}280$ learnable ones, or exactly the
+$17.2\%$ observed. Any implementation that synchronises \texttt{state\_dict} rather than
+\texttt{parameters()} pays this, and ours does.
+
+We therefore restate the communication accounting in terms of transmitted scalars rather than
+learnable parameters. The qualitative conclusion of the first version, that under parameter
+parity the KAN transmits more, survives; the mechanism we gave for it did not include the knot
+buffers and so the figure we quoted was right for an incomplete reason.
 
 \subsection{Spline Approximation on NetFlow Features}
 
@@ -70,6 +89,19 @@ where the additive $\mathcal{O}(G^{-(k+1)})$ residual is the spline-approximatio
 \begin{proof}[Sketch]
 The dominant non-IID FedAvg term $\frac{2L}{\mu^2 T}(L+\Gamma_\alpha)$ is obtained by adapting Theorem 2 of \cite{li2020convergence} to the parameter set $\Theta_{\text{KAN}}$, which remains a finite-dimensional Euclidean space and inherits the smoothness/strong-convexity assumptions because the SiLU base activation and linear B-spline expansion in \eqref{eq:edge} are differentiable. The spline-bias term arises because each edge function $\phi_{q,p}$ is approximated only up to the bound in Lemma \ref{lem:spline}; aggregating the per-edge $L_\infty$ errors over $n_{\text{in}}\cdot n_{\text{out}}$ edges yields an overall residual of order $G^{-(k+1)}$ in the loss, which does not couple to the gradient-heterogeneity term $\Gamma_\alpha$.
 \end{proof}
+
+\textbf{An empirical check on the assumptions.} Reviewer feedback asked for evidence on the
+local convexity that Theorem~\ref{thm:conv} assumes, and the evidence is unfavourable. Running
+Lanczos with full re-orthogonalisation on the exact Hessian-vector product at the converged
+federated solution (NF-BoT-IoT-v2, binary, $50$ rounds, $8192$ held-out samples, $40$ Ritz
+directions) gives $\lambda_{\max}=88.5$ and $\lambda_{\min}=-0.134$ for FedKAN-8, with $45\%$
+of the Ritz values negative, and $\lambda_{\max}=0.52$, $\lambda_{\min}=-1.8\times 10^{-3}$
+for the parameter-matched MLP, with $27.5\%$ negative. Negative curvature at the solution means
+strong convexity fails locally as well as globally, so the theorem describes a regime the
+training does not reach. We keep it for the structure it exposes, that the spline bias enters
+additively and does not scale with $\Gamma_\alpha$, and not as a bound on our runs. The two
+condition numbers are the same order ($662$ against $285$), so the spectrum does not explain
+any performance difference between the architectures either.
 
 % GO BO 19/08/2026. He qua nay KHONG suy ra duoc tu Dinh ly 1: so hang
 % 2L/mu^2 T (L + Gamma_alpha) ap giong het cho ca KAN lan MLP, con sai so spline
