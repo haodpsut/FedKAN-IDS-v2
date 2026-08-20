@@ -32,6 +32,28 @@ echo
 echo "=== 3. BoT-IoT-specific tables ==="
 python scripts/make_latex_tables.py >/dev/null
 
+# --- Vong R1 (08/2026). Bang cu o tren sinh tu results/runs (RTX 4090); nhung
+# cai duoi day sinh tu run tren MOT may CPU. Truoc 20/08 script nay khong goi
+# cai nao trong so chung, nen cau "regenerates every table" trong bai la SAI.
+echo "[R1] bang headline tu run mot may"
+python scripts/make_tables_r1.py 2>&1 | tail -3
+echo "[R1] phan tich sweep learning rate (4 o)"
+for c in botiot toniot cseciic cseciic_mc50k; do
+  python scripts/analyse_sweep.py results/lrsweep_$c 2>&1 | tail -4
+done
+echo "[R1] giao thuc long nhau: chon lr tren seed giu rieng"
+python scripts/lr_holdout.py 2>&1 | tail -6
+echo "[R1] chi phi suy dien tren CPU mot luong"
+python scripts/hw_profile.py --reps 300 --out results/hw_profile_idle.json 2>&1 | tail -4
+echo "[R1] metric IDS suy tu run da co (MCC, FPR)"
+python scripts/derive_ids_metrics.py 2>&1 | tail -4
+echo "[R1] chi phi truyen: byte toi dich"
+python scripts/comm_cost.py 2>&1 | tail -4
+echo "[R1] phap y phan hoach seed 17"
+python scripts/seed17_forensics.py --config configs/experiments/e1_toniot.yaml --mode binary 2>&1 | tail -4
+echo "[R1] bang nguon cho cong truy so"
+python scripts/emit_claims_csv.py 2>&1 | tail -2
+
 echo
 echo "=== 4. per-dataset stats (Welch + paired-t + bootstrap CI) ==="
 for prefix in e1_botiot e1_toniot e1_cseciic; do
