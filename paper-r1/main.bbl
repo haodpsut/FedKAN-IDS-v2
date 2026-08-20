@@ -127,6 +127,55 @@ M.~Sarhan, S.~Layeghy, and M.~Portmann, ``Towards a standard feature set for
   network intrusion detection system datasets,'' \emph{Mobile networks and
   applications}, vol.~27, no.~1, pp. 357--370, 2022.
 
+\bibitem{melis2018eval}
+G.~Melis, C.~Dyer, and P.~Blunsom, ``On the state of the art of evaluation in
+  neural language models,'' in \emph{Int. Conf. Learn. Represent. (ICLR)},
+  2018, arXiv:1707.05589.
+
+\bibitem{musgrave2020reality}
+K.~Musgrave, S.~Belongie, and S.-N. Lim, ``A metric learning reality check,''
+  in \emph{Eur. Conf. Comput. Vis. (ECCV)}, 2020, arXiv:2003.08505.
+
+\bibitem{dacrema2019progress}
+M.~Ferrari~Dacrema, P.~Cremonesi, and D.~Jannach, ``Are we really making much
+  progress? a worrying analysis of recent neural recommendation approaches,''
+  in \emph{ACM Conf. Recommender Systems (RecSys)}, 2019.
+
+\bibitem{lucic2018gans}
+M.~Lucic, K.~Kurach, M.~Michalski, S.~Gelly, and O.~Bousquet, ``Are {GAN}s
+  created equal? a large-scale study,'' in \emph{Adv. Neural Inf. Process.
+  Syst. (NeurIPS)}, 2018, arXiv:1711.10337.
+
+\bibitem{henderson2018matters}
+P.~Henderson, R.~Islam, P.~Bachman, J.~Pineau, D.~Precup, and D.~Meger, ``Deep
+  reinforcement learning that matters,'' in \emph{AAAI Conf. Artif. Intell.},
+  2018, arXiv:1709.06560.
+
+\bibitem{dodge2019showwork}
+J.~Dodge, S.~Gururangan, D.~Card, R.~Schwartz, and N.~A. Smith, ``Show your
+  work: Improved reporting of experimental results,'' in \emph{Conf. Empirical
+  Methods Nat. Lang. Process. (EMNLP)}, 2019.
+
+\bibitem{bouthillier2021variance}
+X.~Bouthillier, P.~Delaunay, M.~Bronzi \emph{et~al.}, ``Accounting for variance
+  in machine learning benchmarks,'' in \emph{Proc. Mach. Learn. Syst. (MLSys)},
+  2021, arXiv:2103.03098.
+
+\bibitem{kairouz2021advances}
+P.~Kairouz, H.~B. McMahan, B.~Avent \emph{et~al.}, ``Advances and open problems
+  in federated learning,'' \emph{Found. Trends Mach. Learn.}, vol.~14, no.
+  1--2, pp. 1--210, 2021, arXiv:1912.04977.
+
+\bibitem{li2020fedprox}
+T.~Li, A.~K. Sahu, M.~Zaheer, M.~Sanjabi, A.~Talwalkar, and V.~Smith,
+  ``Federated optimization in heterogeneous networks,'' in \emph{Proc. Mach.
+  Learn. Syst. (MLSys)}, 2020, arXiv:1812.06127.
+
+\bibitem{karimireddy2020scaffold}
+S.~P. Karimireddy, S.~Kale, M.~Mohri, S.~Reddi, S.~Stich, and A.~T. Suresh,
+  ``{SCAFFOLD}: Stochastic controlled averaging for federated learning,'' in
+  \emph{Int. Conf. Mach. Learn. (ICML)}, 2020, arXiv:1910.06378.
+
 \bibitem{schumaker2007}
 L.~Schumaker, \emph{Spline functions: basic theory}.\hskip 1em plus 0.5em minus
   0.4em\relax Cambridge university press, 2007.
@@ -134,5 +183,35 @@ L.~Schumaker, \emph{Spline functions: basic theory}.\hskip 1em plus 0.5em minus
 \bibitem{li2020convergence}
 X.~Li, K.~Huang, W.~Yang, S.~Wang, and Z.~Zhang, ``On the convergence of fedavg
   on non-iid data,'' \emph{arXiv preprint arXiv:1907.02189}, 2019.
+
+\bibitem{ghorbani2019hessian}
+B.~Ghorbani, S.~Krishnan, and Y.~Xiao, ``An investigation into neural net
+  optimization via hessian eigenvalue density,'' in \emph{Int. Conf. Mach.
+  Learn. (ICML)}, 2019, arXiv:1901.10159.
+
+\bibitem{yao2020pyhessian}
+Z.~Yao, A.~Gholami, K.~Keutzer, and M.~W. Mahoney, ``{PyHessian}: Neural
+  networks through the lens of the {H}essian,'' in \emph{IEEE Int. Conf. Big
+  Data}, 2020.
+
+\bibitem{li2021moon}
+Q.~Li, B.~He, and D.~Song, ``Model-contrastive federated learning,'' in
+  \emph{IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, 2021,
+  arXiv:2103.16257.
+
+\bibitem{wang2020fednova}
+J.~Wang, Q.~Liu, H.~Liang, G.~Joshi, and H.~V. Poor, ``Tackling the objective
+  inconsistency problem in heterogeneous federated optimization,'' in
+  \emph{Adv. Neural Inf. Process. Syst. (NeurIPS)}, 2020, arXiv:2007.07481.
+
+\bibitem{acar2021feddyn}
+D.~A.~E. Acar, Y.~Zhao, R.~Matas, M.~Mattina, P.~Whatmough, and V.~Saligrama,
+  ``Federated learning based on dynamic regularization,'' in \emph{Int. Conf.
+  Learn. Represent. (ICLR)}, 2021, arXiv:2111.04263.
+
+\bibitem{reddi2021adaptive}
+S.~J. Reddi, Z.~Charles, M.~Zaheer \emph{et~al.}, ``Adaptive federated
+  optimization,'' in \emph{Int. Conf. Learn. Represent. (ICLR)}, 2021,
+  arXiv:2003.00295.
 
 \end{thebibliography}

@@ -389,8 +389,7 @@ A mean over only the seeds that arrive would flatter whichever architecture fail
 \subsection{Stronger aggregation removes what is left of the gap}\label{sec:algos}
 
 The submitted comparison used FedAvg for both architectures. Since the learning-rate result
-above shows how much an under-served baseline can distort the conclusion, we ran four further
-aggregation and compression algorithms on the same cell, ten seeds each.
+above shows how much an under-served baseline can distort the conclusion, we ran four further aggregation and compression algorithms on the same cell, ten seeds each: FedProx~\cite{li2020fedprox}, SCAFFOLD~\cite{karimireddy2020scaffold}, MOON~\cite{li2021moon} and FedPAQ~\cite{reisizadeh2020fedpaq} with top-$k$ sparsification~\cite{aji2017topk}. Reviewer~1 also suggested FedNova~\cite{wang2020fednova} and FedDyn~\cite{acar2021feddyn}, and adaptive server optimisation~\cite{reddi2021adaptive} is a further natural comparator; we did not run them and say so rather than add a hasty implementation of each.
 
 \begin{table}[t]
 \caption{Aggregation and compression algorithms, NF-BoT-IoT-v2 binary, Dir $\alpha=0.1$,

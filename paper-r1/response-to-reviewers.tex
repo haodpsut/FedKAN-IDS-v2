@@ -4,6 +4,11 @@
 \usepackage{hyperref}
 \hypersetup{colorlinks=true, urlcolor=blue, linkcolor=black}
 \usepackage{enumitem}
+% Nap nhan tu ban thao de moi \ref o day in ra dung so muc/bang cua BAI, thay vi
+% dau hoi. Neu thieu thi phan bien doc "Table ??" va khong tra nguoc duoc, tuc o
+% "Where in the manuscript" thanh vo dung.
+\usepackage{xr}
+\externaldocument{main}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
 
@@ -68,7 +73,7 @@ per-client hyper-parameter search is not available, insensitivity to the learnin
 arguably the more useful property, and it is a claim about \emph{optimisation behaviour}
 rather than about representational capacity. The revised paper is built around that claim,
 and the title and abstract have changed accordingly.
-\where{}
+\where{Abstract; Sec.~\ref{sec:intro} (``Headline finding'' and the four contributions, both rewritten); Sec.~\ref{sec:lrsweep}, which is new; Sec.~\ref{sec:conclusion}. The title changed with them.}
 
 \rc{R1.2 Expand baselines: add comparisons with FedProx, SCAFFOLD, MOON, FedNova, or
 FedDyn beyond FedAvg-based MLPs.}
@@ -94,7 +99,7 @@ that mismatch is the cause but we have not proved it. We therefore report the ru
 explicitly draw \emph{no} conclusion about SCAFFOLD from them, rather than present a number we
 suspect is our own error as evidence about the method. FedNova and FedDyn were not run; we
 prefer to say so than to add them hastily.
-\where{}
+\where{Sec.~\ref{sec:algos}, which is new, with Table~\ref{tab:algos} (FedAvg, FedProx, MOON, FedPAQ, SCAFFOLD) and Table~\ref{tab:compound} (the two baseline corrections applied together).}
 
 \rc{R1.3 IDS metrics: include Precision, Recall, F1-score, MCC, ROC-AUC, or False
 Positive Rate for comprehensive evaluation.}
@@ -107,7 +112,7 @@ We do \emph{not} report ROC-AUC, and we prefer to say so explicitly rather than 
 over the request: our runs store predicted labels, not continuous scores, so ROC-AUC
 cannot be recovered from the released artefacts.
 
-\where{}
+\where{Precision, recall, MCC and false-positive rate are reported in Table~\ref{tab:stats_botiot}, Table~\ref{tab:stats_toniot} and Table~\ref{tab:stats_cseciic}; the derivation and its verification are described in Sec.~\ref{sec:experiments}. The ROC-AUC limitation is stated there too.}
 
 \rc{R1.4 Communication costs: beyond parameter transmission, add transmitted bytes,
 communication rounds, convergence efficiency, or training time.}
@@ -115,7 +120,7 @@ communication rounds, convergence efficiency, or training time.}
 after a fixed round budget, because the latter assumes both architectures must run the full
 schedule. Table~\ref{tab:bytes2target} reports uplink-to-target together with the number of seeds that reach the target at all, which is the column a mean would hide: at the $90\%$ target FedKAN-8 arrives on nine seeds of ten against seven for the parameter-matched MLP, while costing more bytes to get there. Training time and
 per-round wall-clock are included, and inference cost is answered under R1.5.
-\where{}
+\where{Table~\ref{tab:bytes2target} in Sec.~\ref{sec:cost}, reporting uplink-to-target and the number of seeds that reach the target; per-round wall-clock and round counts are in Sec.~\ref{sec:experiments}.}
 
 \rc{R1.5 Deployment claims: support Raspberry Pi statements with experimental evidence
 or present them more cautiously as potential future work.}
@@ -127,7 +132,7 @@ FedKAN-8 costs $0.0995$~ms per sample against $0.0050$~ms for the parameter-matc
 factor of $19.9$, and $1.690$~ms against $0.045$~ms for a batch of $1000$, a factor of $37.9$.
 So that a reader can convert these to their own gateway we also report an anchor on the same machine: a $256\times256$ matrix multiply takes $0.024$~ms. The full protocol, including the anchor, is Table~\ref{tab:hwcost} in the revised Section~\ref{sec:cost}. Parameter parity is not cost
 parity, and this now appears in the abstract.
-\where{}
+\where{Sec.~\ref{sec:cost} and Table~\ref{tab:hwcost}, including the conversion anchor. The Raspberry~Pi sentences of the submitted version were removed from Sec.~\ref{sec:conclusion} rather than softened.}
 
 \rc{R1.6 Generalization: present class-distribution skew and FedKAN performance as an
 empirical observation rather than a universally established property.}
@@ -140,7 +145,7 @@ introduction and conclusion that projected the pattern onto unseen datasets. Rev
 right that three datasets cannot establish a monotone relationship, and our revised
 analysis (R2.7) gives a further reason for caution: the direction of the effect is
 sensitive to a hyper-parameter choice we had held fixed.
-\where{}
+\where{Sec.~\ref{sec:experiments} (``What this means for the claim'' and the withdrawn skew-gradient passage) and the threats-to-validity list in Sec.~\ref{sec:conclusion}.}
 
 \rc{R1.7 Presentation: increase font sizes, improve confidence interval visibility,
 simplify long sentences.}
@@ -153,7 +158,7 @@ overlong sentences. We note one specific defect the reviewer's comment led us to
 sentence in the conclusion had lost its punctuation in the submitted PDF and read as
 ``a reproducible failure mode seed~17's Dirichlet partition drives\ldots''. That sentence
 has been repaired.
-\where{}
+\where{All figures regenerated through a single style module; the repaired conclusion sentence is in Sec.~\ref{sec:conclusion}. Table captions now state the summary statistic, which was the source of the discrepancy between Table~\ref{tab:headline_r1} and Table~\ref{tab:lastround}.}
 
 \hrule
 \section*{Reviewer 2}
@@ -181,7 +186,7 @@ conclusion rather than deriving it. Since our revised experiments no longer supp
 conclusion empirically either (R2.7), we have removed Corollary~2 rather than repair it,
 and the convergence analysis is now presented only as what it establishes: that the
 spline bias enters additively and does not scale with heterogeneity.
-\where{}
+\where{Sec.~\ref{sec:theory}: the theorem preamble now states the assumption limits, Corollary~2 of the submitted version is removed, and the Hessian measurement is reported in the same section.}
 
 \rc{R2.2 Missing baselines: add communication-efficient FL methods (FedPAQ, Top-$k$
 SGD, or CG-FKAN); at minimum one compression baseline.}
@@ -199,7 +204,7 @@ We also note the accounting point, because it is easy to miss: SCAFFOLD doubles 
 ($15.38$ against $7.69$~MB) because each client returns a control variate as well as a model
 delta. A comparison that charges every algorithm one model per round would make SCAFFOLD look
 free.
-\where{}
+\where{Table~\ref{tab:algos} in Sec.~\ref{sec:algos} (FedPAQ with top-$k$ at $k=10\%$, with byte accounting), and the SCAFFOLD non-result discussed in the same section.}
 
 \rc{R2.3 Seed-17 pathology: provide class and feature distributions per client, why
 F-KAN-16 escapes the trap and MLP does not, and whether other seeds behave similarly.}
@@ -214,14 +219,31 @@ final accuracy are weak and not significant: Spearman $+0.42$ ($p=0.23$) for ent
 failure mode as reproducible but unexplained rather than offer a mechanism the data does not
 support, and we have removed the sentence attributing it to an interaction between the
 partition and the class distribution.
-\where{}
+\where{Sec.~\ref{sec:lrsweep}, the paragraph on the seed-17 partition, with the ranking of all ten partitions and the rank correlations. The attribution sentence of the submitted version is removed.}
 
 \rc{R2.4 Hardware profiling: include preliminary measurements on Raspberry Pi or
 similar hardware; RTX 4090 times are not representative of IoT deployment.}
-\reply Answered under R1.5: single-thread CPU profiling with a conversion anchor, in place of the
-RTX~4090 numbers, which we agree answer a different question (centralised training throughput)
-and are labelled as such. We did not fabricate Raspberry Pi figures.
-\where{}
+\reply We do not have a Raspberry~Pi, and we would rather say that than estimate a number for hardware
+we cannot run. What we can measure honestly is the regime closest to it available to us:
+single-thread CPU with batch size~1, on an idle machine. At matched parameters ($3{,}280$ against
+$3{,}362$) FedKAN-8 costs $0.0995$~ms per sample against $0.0050$~ms for the parameter-matched
+MLP, a factor of $19.9$, and $1.690$ against $0.045$~ms for a batch of $1000$, a factor of
+$37.9$. Every KAN edge evaluates a B-spline where an MLP edge does one multiply-accumulate, so
+the direction is expected; the magnitude is not what parameter parity would suggest.
+
+Because a millisecond figure only describes the machine it was taken on, Table~\ref{tab:hwcost}
+carries an anchor: one $256\times256$ matrix multiply on the same machine and thread takes
+$0.024$~ms. A reader can measure that on their own gateway in a few lines and convert the rest.
+Without such an anchor our numbers would not transfer, which is part of the reviewer's point.
+
+We should also be explicit about what we withdrew rather than fixed. The submitted manuscript
+reported per-round wall-clock of $1.8$--$2.5$~s for FedKAN against $1.5$--$2.1$~s for the MLP on
+an RTX~4090 and described this as ``well within any IoT FL deployment budget''. That measurement
+answers a different question, centralised training throughput on a workstation, and it is no
+longer used to support any deployment claim. The submitted manuscript also stated that the model
+``trains end-to-end on a Raspberry Pi-class device''. We never measured that, and the sentence is
+gone.
+\where{Sec.~\ref{sec:cost} and Table~\ref{tab:hwcost}. The RTX~4090 figures of the submitted version are no longer used for any deployment claim.}
 
 \rc{R2.5 Sensitivity analysis: vary grid size $G \in \{3,5,10\}$, spline order
 $k \in \{3,4,5\}$, and hidden width beyond 8 and 16.}
@@ -241,7 +263,7 @@ $0.98$~pp \emph{better} than $h{=}8$, while $h{=}16$ and $h{=}32$ give $+0.80$ a
 at two and four times the parameters. Within this family more capacity does not help, which is
 consistent with the regularisation reading of the spline basis and inconsistent with a
 capacity reading.
-\where{}
+\where{Sec.~\ref{sec:lrsweep}, the sensitivity paragraph, with parameter counts alongside each configuration; the $G{=}10$ result is discussed in the seed-17 paragraph of the same section.}
 
 \rc{R2.6 Local convexity: provide empirical evidence (e.g.\ Hessian spectrum analysis)
 supporting the local convexity assumption.}
@@ -256,7 +278,7 @@ as well. We state this in the revised theory section, and it is part of why we r
 Corollary~2. We also note what the measurement does \emph{not} show: the two condition numbers
 are the same order ($662$ against $285$), so the Hessian spectrum does not explain any
 performance difference between the architectures.
-\where{}
+\where{Sec.~\ref{sec:theory}, the paragraph ``An empirical check on the assumptions''.}
 
 \rc{R2.7 Hyperparameter justification: clarify whether Adam with $\eta = 10^{-2}$ was
 tuned per architecture, and whether KANs require different learning rates.}
@@ -277,12 +299,29 @@ Yes, KANs need a different learning rate from MLPs, and that turns out to be the
 finding rather than a nuisance: KAN is $2.7$ to $5.4$ times less sensitive to the choice.
 Section~\ref{sec:lrsweep} is new, the title and abstract are rewritten around this, and the
 accuracy and variance claims of the first version are withdrawn.
-\where{}
+\where{Sec.~\ref{sec:lrsweep} in full, with Table~\ref{tab:lrsweep}, Table~\ref{tab:protocols} (four protocols side by side), Table~\ref{tab:lrrobust} and Table~\ref{tab:pooled}. The abstract, contributions and title all changed as a result.}
 
 \rc{R2.8 Seed-17 characterization: detail the client data distributions that make this
 partition uniquely challenging for KAN-8.}
-\reply Answered together with R2.3 above: the per-client distributions are now reported for all ten
-partitions, and they do not identify seed~17.
-\where{}
+\reply Reported together with R2.3, and we summarise the outcome here because it is a negative one and
+easy to miss in a cross-reference. We computed, for all ten Dirichlet partitions rather than for
+seed~17 alone, the per-client sample-count Gini coefficient, the smallest and largest client, the
+mean and minimum per-client label entropy, and the spread of the positive-class proportion across
+clients. Ranking seed~17 against the other nine on each of these is the test: if it is not extreme
+on any of them, then ``the partition is unusually skewed'' does not explain the failure.
+
+It is not extreme. Seed~17 ranks second of ten by client-size Gini ($0.7235$), behind seed~31 at
+$0.7600$, which behaves normally. It ranks ninth of ten by mean per-client entropy, and seed~29
+is lower still while landing in the upper half of the accuracy ordering. Its positive-class spread
+of $1.0$ is shared by eight of the ten partitions and so discriminates nothing. Rank correlations
+against final accuracy are weak and not significant: Spearman $+0.42$ ($p=0.23$) for entropy,
+$-0.30$ ($p=0.40$) for Gini, $+0.61$ ($p=0.06$) for the smallest client.
+
+We therefore report the failure as reproducible but unexplained, and we removed the sentence in
+the submitted version attributing it to an interaction between the Dirichlet partition and the
+underlying class distribution. That sentence was an assertion; the measurements the reviewer asked
+for do not support it. The reviewer's own hypothesis, that the B-spline grid support may not cover
+some clients' feature range, remains untested and we say so rather than claim it.
+\where{Sec.~\ref{sec:lrsweep}, same paragraph as R2.3.}
 
 \end{document}

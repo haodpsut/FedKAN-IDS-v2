@@ -93,7 +93,7 @@ The dominant non-IID FedAvg term $\frac{2L}{\mu^2 T}(L+\Gamma_\alpha)$ is obtain
 \textbf{An empirical check on the assumptions.} Reviewer feedback asked for evidence on the
 local convexity that Theorem~\ref{thm:conv} assumes, and the evidence is unfavourable. Running
 Lanczos with full re-orthogonalisation on the exact Hessian-vector product at the converged
-federated solution (NF-BoT-IoT-v2, binary, $50$ rounds, $8192$ held-out samples, $40$ Ritz
+federated solution ~\cite{ghorbani2019hessian,yao2020pyhessian} (NF-BoT-IoT-v2, binary, $50$ rounds, $8192$ held-out samples, $40$ Ritz
 directions) gives $\lambda_{\max}=88.5$ and $\lambda_{\min}=-0.134$ for FedKAN-8, with $45\%$
 of the Ritz values negative, and $\lambda_{\max}=0.52$, $\lambda_{\min}=-1.8\times 10^{-3}$
 for the parameter-matched MLP, with $27.5\%$ negative. Negative curvature at the solution means

@@ -12,6 +12,18 @@
 
 \textbf{Positioning of this paper.} The methodological observation ``KAN-FL converges in fewer rounds and transmits fewer bytes than a parameter-heavy MLP'' has therefore been published several times outside the IDS setting. We do \emph{not} claim that observation as new. What is new in this paper is (i) a systematic empirical study of FedKAN \emph{specifically} on the standardised NetFlow-v2 family of IDS datasets~\cite{sarhan2022standard}, (ii) a parameter-matched comparison protocol that resolves the unfair-baseline ambiguity present in much prior FedKAN work, and (iii) a refined narrative anchored in a convergence analysis: FedKAN's advantage is not in mean accuracy but in worst-case robustness under extreme client heterogeneity, and this advantage cannot be replicated by simply scaling up an MLP baseline.
 
+\textbf{This failure mode has a literature.} That a comparison can be decided by how well each
+side was tuned rather than by the methods themselves is not a new observation, though it appears
+not to have reached the federated-KAN line of work. It has been documented in language
+modelling~\cite{melis2018eval}, metric learning~\cite{musgrave2020reality}, recommender
+systems~\cite{dacrema2019progress}, generative models~\cite{lucic2018gans} and reinforcement
+learning~\cite{henderson2018matters}, each time with the same shape: a proposed method is tuned
+carefully, the baseline is not, and the reported gain shrinks or vanishes when both receive the
+same budget. Related work on reporting practice argues for stating the search budget and the
+variance it induces~\cite{dodge2019showwork,bouthillier2021variance}. Our contribution is to
+carry that check into federated intrusion detection, where we find the same pattern in our own
+previously published numbers.
+
 \textbf{Headline finding.} The advantage attributed to federated KANs in the recent
 literature, and in the first version of this manuscript, is confounded with how much
 hyper-parameter tuning each architecture receives. On NF-BoT-IoT-v2 binary detection under
