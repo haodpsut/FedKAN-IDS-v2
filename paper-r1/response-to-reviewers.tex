@@ -113,10 +113,7 @@ cannot be recovered from the released artefacts.
 communication rounds, convergence efficiency, or training time.}
 \reply We now report bytes and rounds \emph{to reach a fixed accuracy target} rather than total bytes
 after a fixed round budget, because the latter assumes both architectures must run the full
-schedule. At a target of $90\%$ of the best accuracy any architecture reaches, FedKAN-8 needs
-$1.32$~MB of uplink against $0.10$~MB for FedAvg-MLP-32; at $94\%$ the figures are $1.04$ and
-$0.54$~MB. We also report the number of seeds that reach the target at all, which is the
-column that favours the KAN: $9/10$ and $8/10$ against $7/10$ and $6/10$. Training time and
+schedule. Table~\ref{tab:bytes2target} reports uplink-to-target together with the number of seeds that reach the target at all, which is the column a mean would hide: at the $90\%$ target FedKAN-8 arrives on nine seeds of ten against seven for the parameter-matched MLP, while costing more bytes to get there. Training time and
 per-round wall-clock are included, and inference cost is answered under R1.5.
 \where{}
 
@@ -128,8 +125,7 @@ we can measure: single-thread CPU inference with batch size $1$, which is the cl
 deployment-like regime available to us. At matched parameters ($3{,}280$ against $3{,}362$)
 FedKAN-8 costs $0.0995$~ms per sample against $0.0050$~ms for the parameter-matched MLP, a
 factor of $19.9$, and $1.690$~ms against $0.045$~ms for a batch of $1000$, a factor of $37.9$.
-So that a reader can convert these to their own gateway we also report an anchor on the same
-machine: a $256\times256$ matrix multiply takes $0.024$~ms. Parameter parity is not cost
+So that a reader can convert these to their own gateway we also report an anchor on the same machine: a $256\times256$ matrix multiply takes $0.024$~ms. The full protocol, including the anchor, is Table~\ref{tab:hwcost} in the revised Section~\ref{sec:cost}. Parameter parity is not cost
 parity, and this now appears in the abstract.
 \where{}
 

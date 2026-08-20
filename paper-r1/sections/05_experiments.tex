@@ -360,6 +360,32 @@ gives $+0.64$~pp ($p=0.32$) at the last round, $+1.38$ ($p=0.11$) over five roun
 significance is not, and a single-round summary is the noisiest of the five. We report the
 range rather than the most favourable member of it.
 
+\subsection{What the architecture costs to run}\label{sec:cost}
+
+Both reviewers asked for deployment-relevant cost rather than parameter counts, and one asked
+specifically for hardware that resembles a gateway. We do not have a Raspberry~Pi, and a figure
+we cannot measure should not appear in a paper, so we report the closest regime we can measure
+honestly: single-thread CPU, batch size~1, on an idle machine.
+
+\input{results/tables/hwcost.tex}
+
+At matched parameters ($3{,}280$ against $3{,}362$) FedKAN-8 costs $19.9\times$ more per sample
+and $37.9\times$ more per batch of $1000$. The direction is not surprising, since every KAN edge
+evaluates a B-spline where an MLP edge does one multiply-accumulate, but the magnitude is larger
+than parameter parity would suggest and it is the number a deployment decision turns on.
+Table~\ref{tab:hwcost} includes an anchor so the figures transfer: a $256\times256$ matrix
+multiply takes $0.024$~ms on the same machine and thread, and a reader can measure that on their
+own gateway in a few lines.
+
+\input{results/tables/bytes2target.tex}
+
+On communication, reporting total bytes after a fixed round budget assumes both architectures
+must run the full schedule. Table~\ref{tab:bytes2target} instead reports the uplink needed to
+reach a target, together with how many seeds reach it at all. That second column is the one that
+favours the KAN and the one a mean would hide: at the $90\%$ target FedKAN-8 arrives on nine
+seeds of ten against seven for the parameter-matched MLP, while costing more bytes to get there.
+A mean over only the seeds that arrive would flatter whichever architecture fails more often.
+
 \subsection{Stronger aggregation removes what is left of the gap}\label{sec:algos}
 
 The submitted comparison used FedAvg for both architectures. Since the learning-rate result
