@@ -21,6 +21,9 @@ for arg in "$@"; do
     [[ "$arg" == "--no-paper" ]] && SKIP_PAPER=1
 done
 
+echo "=== 0. macro: MOT cho o cho moi so headline ==="
+python3 scripts/emit_paper_macros.py || true
+echo
 echo "=== 1. aggregate ==="
 python scripts/aggregate.py | tail -30
 
