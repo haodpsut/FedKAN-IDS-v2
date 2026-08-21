@@ -174,6 +174,121 @@ def main():
     M["pPooledCell"] = "%.3f" % paired_p(cm)
     M["nCells"] = str(len(cm))
 
+    # ---- so cua Observation 1 va Observation 2 ------------------------------
+    # Truoc 21/08 chung la LITERAL v1 go tay: bai in 97,53 / 99,00 trong khi Bang I
+    # (sinh tu 10 seed CPU) in 97,67 / 98,51. Doc gia so hai cho thay lech ngay.
+    def _low(arch, reg):
+        v = [mean5(d) for d in glob.glob(str(ROOT / ("results/lowhet/lowhet_%s__%s__seed*" % (arch, reg))))]
+        return v
+    for arch, nm in (("kan8", "KanIid"), ("kan16", "KanSixteenIid"),
+                     ("mlp32", "MlpThirtyTwoIid"), ("mlp80", "MlpIid")):
+        v = _low(arch, "iid")
+        if v:
+            M["acc" + nm] = "%.2f" % (100 * st.mean(v))
+    iid = {a: st.mean(_low(a, "iid")) for a in ("kan8", "kan16", "mlp32", "mlp80") if _low(a, "iid")}
+    d10 = {a: st.mean(_low(a, "dir1.0")) for a in ("kan8", "kan16", "mlp32", "mlp80") if _low(a, "dir1.0")}
+    if iid:
+        M["spreadIid"] = "%.2f" % (100 * (max(iid.values()) - min(iid.values())))
+        M["leadMlpIid"] = "%.2f" % (100 * (iid["mlp80"] - iid["kan8"]))
+    if d10:
+        M["spreadDirOne"] = "%.2f" % (100 * (max(d10.values()) - min(d10.values())))
+
+    # worst-seed o headline, hai giao thuc canh nhau (Observation 2 / B2)
+    def _worst(arch, lr):
+        v = [mean5(d) for d in glob.glob(str(ROOT / ("results/lrsweep_botiot/lrsweep_%s_lr%s__dir0.1__seed*" % (arch, lr))))
+             if int(re.search(r"seed(\d+)$", d).group(1)) in OLD]
+        return min(v) if v else None
+    wk, wm = _worst("kan8", "0p01"), _worst("mlp80", "0p01")
+    tk = _worst("kan8", best_lr("lrsweep_botiot", "kan8"))
+    tm = _worst("mlp80", best_lr("lrsweep_botiot", "mlp80"))
+    if None not in (wk, wm, tk, tm):
+        M["worstKanShared"] = "%.2f" % (100 * wk)
+        M["worstMlpShared"] = "%.2f" % (100 * wm)
+        M["worstKanTuned"] = "%.2f" % (100 * tk)
+        M["worstMlpTuned"] = "%.2f" % (100 * tm)
+        M["worstGapShared"] = "%+.2f" % (100 * (wk - wm))
+        M["worstGapTuned"] = "%+.2f" % (100 * (tk - tm))
+
+    # ---- CHANG 0 (20/08): so moi tu 340 run bo sung -------------------------
+    # 0.1 GIAO THUC LONG NHAU TREN CA BON O. Truoc chang 0, ket luan headline
+    # -0,54 pp chi do tren MOT o, va bai phat bieu no nhu khang dinh chung. Nay
+    # do du bon o thi thay no CHI dung o BoT-IoT.
+    for pre, tg in CELLS:
+        lk, lm = best_lr(pre, "kan8"), best_lr(pre, "mlp80")
+        kn, mn = cell(pre, "kan8", lk, NEW), cell(pre, "mlp80", lm, NEW)
+        sp = sorted(set(kn) & set(mn))
+        if not sp:
+            continue
+        d = [100 * (kn[s] - mn[s]) for s in sp]
+        M["nested" + tg] = "%+.2f" % st.mean(d)
+        M["nestedP" + tg] = "%.3f" % paired_p(d)
+        M["nestedWin" + tg] = str(sum(1 for x in d if x > 0))
+        M["nestedN" + tg] = str(len(d))
+
+    # 0.3 LUOI DAY DU, ke ca eta=0,3 va 1,0. Ti le MLP/KAN > 1 nghia la KAN ben
+    # hon. Tren dai HEP cua ban cu ti le la 5,39/4,04/2,66/1,03; tren luoi DAY DU
+    # no thanh 0,33/0,74/0,86/0,88, tuc KAN kem ben hon o CA BON o. Con so
+    # "2,7 den 5,4 lan" chi ton tai trong dai hep ma chinh ta chon.
+    EXTDIR = {"Bot": "lrext", "Ton": "lrext_toniot",
+              "Cse": "lrext_cseciic", "CseMc": "lrext_cseciic_mc50k"}
+    for pre, tg in CELLS:
+        for arch, an in (("kan8", "Kan"), ("mlp80", "Mlp")):
+            vals = [st.mean(cell(pre, arch, lr).values()) for lr in GRID if cell(pre, arch, lr)]
+            for lab in ("03", "0p3"):
+                g = glob.glob(str(ROOT / ("results/%s/lrext_%s_lr%s__dir0.1__seed*" % (EXTDIR[tg], arch, lab))))
+                if g:
+                    vals.append(st.mean(mean5(d) for d in g))
+                    break
+            for lab in ("10", "1", "1p0"):
+                g = glob.glob(str(ROOT / ("results/%s/lrext_%s_lr%s__dir0.1__seed*" % (EXTDIR[tg], arch, lab))))
+                if g:
+                    vals.append(st.mean(mean5(d) for d in g))
+                    break
+            M["spreadWide%s%s" % (an, tg)] = "%.2f" % (100 * (max(vals) - min(vals)))
+        M["ratioWide" + tg] = "%.2f" % (float(M["spreadWideMlp" + tg]) / float(M["spreadWideKan" + tg]))
+
+    # DO NHAY theo G, bac spline k, do rong h. 80 run da chay tu truoc, nhung chi
+    # G=10 vao bai; thu tra loi R2.5 lai HUA co k va h kem so cu the. Dua het vao.
+    for nm in ("G3", "G5", "G10", "k4", "k5", "h4", "h16", "h32"):
+        g = glob.glob(str(ROOT / ("results/sensitivity_botiot/sens_%s__*" % nm)))
+        if g:
+            M["sens" + nm.replace("G", "Grid").replace("k", "Order").replace("h", "Width")] = \
+                "%.2f" % (100 * st.mean(mean5(d) for d in g))
+
+    # gia tri tai eta=0,3 de van xuoi trich duoc, thay vi go tay
+    for tg, ed in (("Bot", "lrext"), ("Ton", "lrext_toniot"),
+                   ("Cse", "lrext_cseciic"), ("CseMc", "lrext_cseciic_mc50k")):
+        for arch, an in (("kan8", "Kan"), ("mlp80", "Mlp")):
+            for lab in ("03", "0p3"):
+                g = glob.glob(str(ROOT / ("results/%s/lrext_%s_lr%s__dir0.1__seed*" % (ed, arch, lab))))
+                if g:
+                    M["ext%s%s" % (an, tg)] = "%.2f" % (100 * st.mean(mean5(d) for d in g))
+                    break
+
+    # 0.4 SCAFFOLD duoi SGD. Bai TU NEU gia thuyet "hong vi dung Adam" ma khong
+    # kiem. Do roi: duoi SGD no TE HON, va sd = 0 nghia la moi seed dung o dung
+    # mot diem. Gia thuyet cua bai SAI.
+    for arch, an in (("kan8", "Kan"), ("mlp80", "Mlp")):
+        g = glob.glob(str(ROOT / ("results/scaffold_sgd/scaffold_sgd_%s__*" % arch)))
+        if g:
+            v = [mean5(d) for d in g]
+            M["scaffoldSgd" + an] = "%.2f" % (100 * st.mean(v))
+            M["scaffoldSgdSd" + an] = "%.2f" % (100 * st.stdev(v))
+
+    # 0.2 DA LOP tren CPU cho BoT-IoT va ToN-IoT. Truoc chang 0, hai o nay chi co
+    # so RTX 4090, nen cau "moi thi nghiem chay tren MOT may" la SAI.
+    for pre, tg in (("mc_botiot", "Bot"), ("mc_toniot", "Ton")):
+        r = {}
+        for d in glob.glob(str(ROOT / ("results/%s/*" % pre))):
+            m = re.search(r"mc_(kan8|mlp80)_", d)
+            if m:
+                try:
+                    r.setdefault(m.group(1), []).append(mean5(d))
+                except Exception:
+                    pass
+        if "kan8" in r and "mlp80" in r:
+            M["mcGap" + tg] = "%+.2f" % (100 * (st.mean(r["kan8"]) - st.mean(r["mlp80"])))
+
     # dai qua bon o, TUNG GIAO THUC RIENG (lop loi 11b: khong duoc ghep hai giao thuc)
     sh = [float(M["gapShared" + t]) for _, t in CELLS]
     tn = [float(M["gapTuned" + t]) for _, t in CELLS]

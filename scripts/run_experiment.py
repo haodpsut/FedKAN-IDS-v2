@@ -66,6 +66,11 @@ def main():
                    choices=["fedavg","fedprox","scaffold","moon","fedpaq"])
     p.add_argument("--prox-mu", type=float, default=0.01)
     p.add_argument("--topk-frac", type=float, default=0.1)
+    # 20/08: phan bien noi bo hoi "SCAFFOLD khong hoi tu co phai vi Adam khong".
+    # Bai TU NEU gia thuyet do ma khong kiem, trong khi kiem no chi la doi mot dong
+    # cau hinh. SGD da co san trong src/fl.py, chi thieu duong ghi de tu dong lenh.
+    p.add_argument("--optimizer", choices=["adam", "sgd"], default=None,
+                   help="ghi de fl.optimizer (kiem gia thuyet SCAFFOLD-vs-Adam)")
     p.add_argument("--lr", type=float, default=None,
                    help="Override fl.lr (per-architecture tuning, R2#7).")
     args = p.parse_args()
@@ -81,6 +86,8 @@ def main():
         cfg["fl"]["rounds"] = args.rounds
     if args.lr is not None:
         cfg["fl"]["lr"] = args.lr
+    if args.optimizer is not None:
+        cfg["fl"]["optimizer"] = args.optimizer
     cfg["fl"]["algo"] = args.algo
     cfg["fl"]["prox_mu"] = args.prox_mu
     cfg["fl"]["topk_frac"] = args.topk_frac

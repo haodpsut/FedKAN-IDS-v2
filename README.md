@@ -1,176 +1,105 @@
-# FedKAN-IDS-v2
+# FedKAN-IDS v2 — artifact for *What Federated KANs Cost and What They Actually Buy*
 
-**Federated Kolmogorov-Arnold Networks for NetFlow-based IoT Intrusion Detection** — a systematic, parameter-matched empirical study across three standardised NetFlow-v2 datasets, anchored in a convergence analysis that introduces a spline-bias term independent of the data-heterogeneity factor.
+Artifact for the IEEE IoT-J revision of manuscript **IoT-66559-2026**. It contains the simulator,
+every configuration, every per-run metric, the scripts that generate each table and figure of the
+paper, and the LaTeX source of both the submitted version and this revision.
 
-Targeting **IEEE Internet of Things Journal**.
+> **Read this first.** The revision reverses several claims of the version submitted in May 2026.
+> If you arrived here from the May submission, the numbers below are not the ones in that paper,
+> and the difference is the point of the revision. Both source trees are in this repository so the
+> two can be diffed directly.
 
-## What this repo contains
+## What the paper now reports
 
-- **Library code** for federated learning with KAN and MLP clients (`src/`).
-- **CLI runners** for single experiments and full grids (`scripts/`).
-- **Per-run metrics** for all 289 reproducible runs (`results/runs/`) used in the paper.
-- **Auto-generated tables and figures** that the paper `\input`s directly from `results/tables/` and `\includegraphics`es from `results/figures/`.
-- **Full LaTeX manuscript** (`paper/`) — `main.pdf` builds from the same `results/` tree.
+Under a nested protocol, where each architecture's learning rate is chosen on ten seeds and the
+comparison is reported on twenty seeds the selection never saw:
 
-## Headline result
+| Cell | FedKAN-8 minus MLP-PM-80 | p (paired) |
+|---|---|---|
+| NF-BoT-IoT-v2 binary | **-0.54 pp** | 0.581 |
+| NF-ToN-IoT-v2 binary | **+4.89 pp** | 0.066 |
+| NF-CSE-CIC binary | +2.52 pp | 0.271 |
+| NF-CSE-CIC multi-class | **+1.55 pp** | 0.014 |
 
-Across **three NetFlow-v2 datasets** evaluated with **n = 10 seeds**, the parameter-matched FedKAN-8 (~3.3k params) versus FedAvg-MLP-PM-80 (~3.4k params) under extreme client heterogeneity (Dirichlet α = 0.1):
+The advantage that the May submission reported (+5.49 pp on NF-BoT-IoT-v2) is absent on that cell
+once the baseline is tuned, and smaller but present on the other three. Three claims of the May
+version are withdrawn outright:
 
-| Dataset | Binary mean Δ | Worst-seed Δ | Multi-class mean Δ |
-|---|---|---|---|
-| NF-BoT-IoT-v2 | **+6.00 pp** (CI [+0.50, +14.57] excludes 0) | **+24.24 pp** | tied |
-| NF-ToN-IoT-v2 | +5.08 pp (CI [-0.29, +9.93]) | -11.07 pp (seed-17 outlier) | tied |
-| NF-CSE-CIC-IDS2018-v2 | tied (-0.38 pp) | -21.23 pp (seed-17 outlier) | **+1.73 pp** (CI [+0.73, +2.74] excludes 0, p=0.012) |
+- **Variance reduction.** 2.53x becomes 1.05x once both architectures are tuned, and is below one
+  on three cells of four.
+- **Worst-seed robustness.** +21.45 pp becomes -0.09 pp under per-architecture tuning.
+- **Learning-rate robustness.** Over a grid extended to eta = 1, the spread ratio is 0.33, 0.74, 0.86
+  and 0.88: below one everywhere, so the parameter-matched MLP is the more robust of the two.
 
-Two complementary advantage patterns emerge: KAN's binary-detection advantage tracks class-distribution skew, while its multi-class advantage scales oppositely with the number of attack classes. A reproducible failure mode (seed 17's Dirichlet partition) is identified, with two mitigations confirmed (larger hidden width, richer spline grid).
+What remains is a cost measurement. At matched parameters on a single CPU thread, FedKAN costs
+19.9x more per-sample inference, 37.9x more per batch of 1000, and transmits 15.4 kB per client
+per round against 13.4 kB. The 17.2% uplink excess is the B-spline knot vector, carried in
+`state_dict` as a buffer: 564 non-learnable scalars against 3,280 learnable ones.
+
+## Hardware
+
+**Every number in the revision was produced on one machine, an Apple M5, CPU only.** The May
+submission ran on an NVIDIA RTX 4090; those 310 runs are retained under `results/runs/` for
+reference and are **not** used for any number in the current paper. Table VIII of the manuscript
+reconciles the run counts. Scripts that build headline tables print the `device` field of every
+run they read and warn if more than one appears.
+
+## Runs on disk
+
+| group | runs |
+|---|---|
+| runs the reported numbers rest on | **1,860** |
+| mis-configured cell, retained and labelled | 240 |
+| original submission, different hardware, superseded | 310 |
+| **total** | **2410** |
+
+The mis-configured directory is kept deliberately, with a `DUNG-DOC-THU-MUC-NAY.md` note: it used
+`downsample=130000` where the submitted cell used `50000`, and the discrepancy flips the sign of
+that cell's result. It is a datum about silent config inheritance, not clutter.
+
+## Reproduce
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/python scripts/prepare_data.py          # fetches the three NetFlow-v2 datasets
+bash scripts/run_all_local.sh                     # learning-rate sweep, four cells
+.venv/bin/python scripts/run_phase0.py            # held-out seeds, extended grid, SCAFFOLD/SGD
+bash scripts/rebuild_paper_artifacts.sh           # every table and figure, then the PDF
+```
+
+No GPU is required and none is used. `rebuild_paper_artifacts.sh` regenerates each table and
+figure from the committed run directories; `scripts/emit_paper_macros.py` writes the LaTeX macro
+file that holds every headline number, so the manuscript never contains a hand-typed one.
 
 ## Layout
 
 ```
-configs/
-  base.yaml                              # default hyperparameters
-  datasets/{nf_botiot_v2, nf_toniot_v2, nf_cseciic_v2}.yaml
-  experiments/
-    e1_botiot.yaml                       # base grid config (overridden per dataset)
-    smoke.yaml, smoke_mlp.yaml           # 5-round sanity checks
-    e1_mini_botiot_*.yaml                # legacy 3-seed configs
-src/
-  data.py            # synthetic + NetFlow dataset dispatch, Dirichlet + IID partitioning
-  datasets/
-    netflow_v2.py    # Sarhan-v2 family loader: download, preprocess, parquet cache
-  models.py          # KAN (via efficient_kan), MLP factories; param counters
-  fl.py              # FedAvg server, client, driver loop with byte accounting
-  metrics.py         # accuracy, F1 (macro / weighted / per-class)
-  utils.py           # config / seed / IO helpers
-scripts/
-  prepare_data.py                  # one-time Kaggle download + preprocess
-  inspect_data.py                  # diagnostic: label distribution + feature stats
-  run_experiment.py                # CLI: --config <yaml> --seed <int> + many overrides
-  run_grid.sh                      # bash equivalent of the notebook for workstation use
-  smoke_test.py                    # offline 3-round assertion
-  aggregate.py                     # summary CSV from per-run metrics
-  stats_tests.py                   # Welch's t-test, paired t-test, bootstrap CI, Cohen d
-  make_latex_tables.py             # headline + worst-seed LaTeX tables
-  build_cross_dataset_table.py     # cross-dataset replication LaTeX table
-  plot_convergence.py              # per-dataset convergence figures
-  plot_perclass.py                 # multi-class per-class F1 figures
-  plot_cross_dataset.py            # 3-dataset cross-dataset figures (3 of them)
-  rebuild_paper_artifacts.sh       # one command: regenerate every table/figure/PDF
-notebooks/
-  10_run_batch.ipynb               # Colab Pro+ entry point (NF-BoT-IoT-v2 grid)
-  20_run_m3c_toniot.ipynb          # Colab entry point (NF-ToN-IoT-v2 grid)
-docs/
-  SERVER_SETUP.md                  # conda environment recipe for the RTX 4090 setup
-results/
-  runs/{exp_id}__{partition}__seed{N}/
-    config_snapshot.yaml           # resolved config at run time
-    per_round.csv                  # per-round acc, F1, comm cost, wall-clock
-    metrics.json                   # final metrics + run-level metadata
-  aggregated/
-    summary.csv                    # one row per run
-    summary_by_cell.csv            # mean/std aggregated per (variant, mode, partition)
-    stats_tests_{botiot,toniot,cseciic}.txt
-  tables/                          # auto-generated LaTeX tables \input'd by the paper
-  figures/                         # auto-generated PDFs \includegraphics'd by the paper
-paper/
-  main.tex                         # IEEEtran[journal] entry point
-  references.bib                   # 16 references including all 7 KAN-FL papers
-  sections/{01..06}*.tex           # one file per section
-  main.pdf                         # latest build (12 pages, 528 KB, 0 warnings)
-  README.md                        # paper-build instructions
+  src/                  simulator: KAN and MLP clients, FedAvg server, four extra aggregators
+  scripts/              experiment runners, analysis, table and figure generators, gates
+  configs/experiments/  one YAML per dataset; per-cell overrides are explicit, never inherited
+  results/              per-run metrics, generated tables and figures
+  paper-r1/             LaTeX source of this revision
+  paper-as-submitted/   LaTeX source of the May 2026 submission, for diffing
 ```
 
-## Hardware
+## Verification scripts
 
-All experiments reported in the paper were executed on a workstation-class **NVIDIA RTX 4090 24GB** managed via the `conda` environment described in [docs/SERVER_SETUP.md](docs/SERVER_SETUP.md). The Colab notebooks (`notebooks/10_run_batch.ipynb`, `notebooks/20_run_m3c_toniot.ipynb`) are also functional and are provided as a fallback for users without a dedicated GPU, but the wall-clock numbers in the paper refer to the RTX 4090 setup.
+The repository carries the checks used while preparing the revision, because several of them
+caught real errors:
 
-Per-round wall-clock on the RTX 4090 (excluding the first-round CUDA warm-up):
-- FedKAN: 1.8–2.5 s per round
-- MLP-PM: 1.5–2.1 s per round
-
-A single 50-round, 10-client run completes in ~2–3 minutes.
-
-## Quickstart
-
-### 1. Environment (RTX 4090 workstation, conda-only)
-
-Follow [docs/SERVER_SETUP.md](docs/SERVER_SETUP.md). Summary:
-```bash
-conda create -n fedkan python=3.11 -y
-conda activate fedkan
-pip install --index-url https://download.pytorch.org/whl/cu121 torch torchvision torchaudio
-pip install numpy pandas pyarrow scipy scikit-learn matplotlib seaborn pyyaml tqdm thop kaggle
-pip install "git+https://github.com/Blealtan/efficient-kan.git@master"
-```
-
-Then verify:
-```bash
-python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
-python scripts/smoke_test.py    # synthetic 3-round assertion test
-```
-
-### 2. Prepare datasets (one-time, ~10 minutes total)
-
-Put `kaggle.json` at `~/.kaggle/kaggle.json` (Kaggle → Settings → Create Legacy API Key). Then:
-```bash
-python scripts/prepare_data.py --dataset nf_botiot_v2
-python scripts/inspect_data.py  --dataset nf_botiot_v2   # sanity-check label + feature distributions
-python scripts/prepare_data.py --dataset nf_toniot_v2
-python scripts/inspect_data.py  --dataset nf_toniot_v2
-python scripts/prepare_data.py --dataset nf_cseciic_v2
-python scripts/inspect_data.py  --dataset nf_cseciic_v2
-```
-
-The preprocessing pipeline drops the four ID columns, replaces ±inf with NaN, clips to the [0.0001, 0.9999] per-column quantile band, applies `log1p` compression to handle heavy-tail byte/packet counts, and Min-Max scales to [0, 1]. Output: a parquet cache in `data/cache/`.
-
-### 3. Run experiments
-
-The bash runner is the recommended path. Examples:
-```bash
-DATASET=botiot bash scripts/run_grid.sh                    # full 72-run grid on NF-BoT-IoT-v2
-DATASET=toniot MINIMAL=1 bash scripts/run_grid.sh          # only Dir(α=0.1), 24 runs on NF-ToN-IoT-v2
-DATASET=toniot FILL_M3A=1 bash scripts/run_grid.sh         # +7 seeds for n=10 statistics
-DATASET=cseciic FILL_M3A=1 bash scripts/run_grid.sh        # 56 additional NF-CSE-CIC-IDS2018-v2 runs
-```
-
-The runner auto-commits and pushes every 4 runs (with retry on push failure), so a disconnect costs at most ~10 minutes of work. `--skip-existing` is enabled, so re-running the same command resumes from where it left off.
-
-For a single experiment without the bash wrapper:
-```bash
-python scripts/run_experiment.py \
-    --config configs/experiments/e1_botiot.yaml \
-    --seed 42 --model-name kan --hidden 8 --grid-size 5 \
-    --mode binary --downsample 130000 \
-    --partition dirichlet --alpha 0.1
-```
-
-### 4. Rebuild paper
-
-After new runs land:
-```bash
-bash scripts/rebuild_paper_artifacts.sh
-```
-
-This regenerates `results/aggregated/`, `results/tables/`, `results/figures/`, and compiles `paper/main.pdf` (`pdflatex + bibtex + pdflatex × 2`). Local TeX Live or Overleaf both work.
+- `verify_handtyped_tables.py` recomputes every cell of the tables typed by hand into the
+  manuscript and prints them beside the printed values.
+- `check_macro_coverage.py` flags any literal in the LaTeX that duplicates a generated macro.
+- `make_tables_r1.py` and `plot_all_cpu.py` refuse to proceed if their inputs mix devices.
 
 ## Citation
 
 ```bibtex
-@misc{do2026fedkanids,
-  title={{FedKAN-IDS}: Heterogeneity-Robust Federated {Kolmogorov-Arnold} Networks for {NetFlow}-Based {IoT} Intrusion Detection},
+@article{do2026fedkanids,
+  title={What Federated {KANs} Cost and What They Actually Buy: A Controlled Study for
+         {NetFlow} Intrusion Detection at Gateway Scale},
   author={Do, Phuc Hao and Nguyen, Van Long and Le, Tran Duc and Dinh, Truong Duy},
-  year={2026},
-  note={Manuscript under review at IEEE Internet of Things Journal.}
+  journal={under revision, IEEE Internet of Things Journal},
+  year={2026}
 }
 ```
-
-## Authors
-
-- Phuc Hao Do
-- Van Long Nguyen
-- Tran Duc Le
-- Truong Duy Dinh (corresponding author, <duydt@ptit.edu.vn>)
-
-## License
-
-Code released under the MIT License. The preprocessed NetFlow-v2 datasets remain under their original CC-BY-NC-SA-4.0 license as distributed via Kaggle by Dhoogla.
