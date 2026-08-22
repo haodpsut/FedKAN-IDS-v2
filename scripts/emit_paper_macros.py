@@ -252,8 +252,16 @@ def main():
     for nm in ("G3", "G5", "G10", "k4", "k5", "h4", "h16", "h32"):
         g = glob.glob(str(ROOT / ("results/sensitivity_botiot/sens_%s__*" % nm)))
         if g:
-            M["sens" + nm.replace("G", "Grid").replace("k", "Order").replace("h", "Width")] = \
-                "%.2f" % (100 * st.mean(mean5(d) for d in g))
+            # TEN MACRO CHI DUOC CO CHU CAI. "\\sensGrid10" khong phai mot lenh hop le:
+            # LaTeX doc \\sensGrid roi de "10" lai, va \\newcommand voi ten do lam vo
+            # ca preamble. Ca 21/08: trang dau cua ban dung chi con 9 tu, va cong
+            # trinh bay van bao 0 overfull 0 ref treo vi no khong doc dong "! Undefined
+            # control sequence" trong log. Doi so sang chu.
+            DIG = {"0": "Zero", "1": "One", "2": "Two", "3": "Three", "4": "Four",
+                   "5": "Five", "6": "Six", "7": "Seven", "8": "Eight", "9": "Nine"}
+            key = nm.replace("G", "Grid").replace("k", "Order").replace("h", "Width")
+            key = "".join(DIG.get(c, c) for c in key)
+            M["sens" + key] = "%.2f" % (100 * st.mean(mean5(d) for d in g))
 
     # gia tri tai eta=0,3 de van xuoi trich duoc, thay vi go tay
     for tg, ed in (("Bot", "lrext"), ("Ton", "lrext_toniot"),
