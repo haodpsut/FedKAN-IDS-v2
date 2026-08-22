@@ -51,7 +51,7 @@ run they read and warn if more than one appears.
 | runs the reported numbers rest on | **1,860** |
 | mis-configured cell, retained and labelled | 240 |
 | original submission, different hardware, superseded | 310 |
-| **total** | **2410** |
+| **total** | **2,410** |
 
 The mis-configured directory is kept deliberately, with a `DUNG-DOC-THU-MUC-NAY.md` note: it used
 `downsample=130000` where the submitted cell used `50000`, and the discrepancy flips the sign of

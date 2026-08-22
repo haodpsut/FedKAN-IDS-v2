@@ -1,0 +1,46 @@
+{
+  "run_id": "mc_kan16_lr0p01__dir0.1__seed31",
+  "seed": 31,
+  "device": "cpu",
+  "model_name": "kan",
+  "model_hidden": [
+    16
+  ],
+  "model_grid_size": 5,
+  "model_spline_order": 3,
+  "data_mode": "multiclass",
+  "data_partition": "dirichlet",
+  "data_alpha": 0.1,
+  "algo": "fedavg",
+  "n_params": 7040,
+  "bytes_per_round_uplink": 30800,
+  "total_uplink_bytes": 15400000,
+  "final_metrics": {
+    "accuracy": 0.9228925190915157,
+    "f1_macro": 0.9281682826890846,
+    "f1_weighted": 0.9229108530716144,
+    "per_class_precision": [
+      0.9604802984378643,
+      0.9822046465645081,
+      0.9416938432651448,
+      0.8230183609493954,
+      0.9279835390946503
+    ],
+    "per_class_recall": [
+      0.8239,
+      0.9935,
+      0.9529,
+      0.9189,
+      0.9740820734341252
+    ],
+    "per_class_f1": [
+      0.8869630746043707,
+      0.9878200347999005,
+      0.9472637805059894,
+      0.8683203401842665,
+      0.9504741833508957
+    ]
+  },
+  "best_accuracy": 0.9243753552628328,
+  "rounds": 50
+}
